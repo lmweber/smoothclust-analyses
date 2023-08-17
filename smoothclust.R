@@ -40,6 +40,7 @@ head(colData(spe_hvgs)$neighbors)
 
 
 # calculate average logcounts across neighbors (vectorized for faster runtime)
+# (alternatively: use kernels for more sophisticated approach)
 
 smoothed_logcounts <- matrix(NA, nrow = nrow(spe_hvgs), ncol = ncol(spe_hvgs))
 
@@ -71,6 +72,8 @@ assayNames(spe_hvgs)
 
 # plots for checking (PCP4 gene)
 
+library(ggplot2)
+
 df <- cbind(as.data.frame(spatialCoords(spe_hvgs)), 
             gene = smoothed_logcounts["ENSG00000183036", ], 
             gene_original = logcounts(spe)[33335, ])
@@ -82,6 +85,9 @@ ggplot(df, aes(x = x, y = y, color = gene_original)) + geom_point(size = 0.5) + 
 
 
 # dimensionality reduction and clustering
+
+library(scater)
+library(scran)
 
 # compute PCA
 set.seed(123)
