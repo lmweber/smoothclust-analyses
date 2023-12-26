@@ -24,6 +24,7 @@ colData(spe_hvgs)$neighbors <- as.list(rep(NA, ncol(spe_hvgs)))
 arrayrow <- colData(spe_hvgs)$array_row
 arraycol <- colData(spe_hvgs)$array_col
 
+# slow step (can improve)
 for (i in 1:ncol(spe_hvgs)) {
   neighbors <- i
   for (j in setdiff(1:ncol(spe_hvgs), i)) {
