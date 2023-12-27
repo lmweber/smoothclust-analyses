@@ -28,10 +28,12 @@ arraycol <- colData(spe_hvgs)$array_col
 for (i in 1:ncol(spe_hvgs)) {
   neighbors <- i
   for (j in setdiff(1:ncol(spe_hvgs), i)) {
+    # defining neighbors as within row and column distance threshold
     if (abs(arrayrow[i] - arrayrow[j]) <= 5 & (abs(arraycol[i] - arraycol[j])) <= 5) {
       neighbors <- c(neighbors, j)
     }
   }
+  # neighbors stored as indices
   colData(spe_hvgs)$neighbors[[i]] <- neighbors
   print(i)
 }
