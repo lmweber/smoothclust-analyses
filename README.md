@@ -1,2 +1,3 @@
-# smoothclust
-Spatial clustering algorithm
+# smoothclust-analyses
+
+Evaluations for spatial clustering algorithm 'smoothclust'
