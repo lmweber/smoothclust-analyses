@@ -31,9 +31,9 @@ dim(spe)
 
 
 # run smoothclust
-# runtime: ~30 seconds
+# runtime: ~45 sec (bandwidth = 0.05) / ~2 min (bandwidth = 0.1)
 
-spe <- smoothclust(spe)
+spe <- smoothclust(spe, bandwidth = 0.05)
 
 
 # plots for checking (PCP4 gene)
@@ -82,6 +82,9 @@ plotSpots(spe, annotate = "label", palette = "libd_layer_colors")
 plotSpots(spe, annotate = "label", palette = unname(palette.colors(36, "Polychrome 36")))
 
 plotSpots(spe, annotate = "ground_truth", palette = "libd_layer_colors")
+
+
+# note bandwidth = 0.05 preserves layer 1 better than bandwidth = 0.1
 
 
 # ARI
