@@ -69,6 +69,7 @@ colnames(reducedDim(spe, "UMAP")) <- paste0("UMAP", 1:2)
 # colLabels(spe) <- factor(clus)
 
 # alternatively: k-means clustering (works better)
+# (note 'logcounts_smooth' assay is not sparse, vs. 'logcounts' which is sparse)
 k <- 6
 set.seed(100)
 clust <- kmeans(reducedDim(spe, "PCA"), centers = k)$cluster
