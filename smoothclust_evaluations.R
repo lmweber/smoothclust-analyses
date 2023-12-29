@@ -33,7 +33,7 @@ dim(spe)
 # run smoothclust
 # runtime: ~1 min with default parameters
 
-spe <- smoothclust(spe)
+spe <- smoothclust(spe, bandwidth = 0.05, method = "uniform")
 
 
 # plots for checking (PCP4 gene)
