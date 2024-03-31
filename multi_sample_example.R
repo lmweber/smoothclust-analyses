@@ -46,12 +46,33 @@ ggplot(df, aes(x = sample_id, y = sum_umi, color = layer)) +
   theme_bw()
 
 
+# simple normalization by sample (by mean sum UMIs across spots per sample)
+
+library(tidyverse)
+
+col_sums <- colSums(counts(spe))
+sample_ids <- colData(spe)$sample_id
+
+df <- data.frame(col_sums, sample_ids) |> 
+  group_by(sample_ids) |> 
+  summarize(mean_by_sample = mean(col_sums))
+
+scale_factors_by_sample <- df$mean_by_sample / mean(df$mean_by_sample)
+scale_factors_by_sample
+
+n_spots_per_sample <- unname(table(colData(spe)$sample_id))
+scale_factors_by_sample_vec <- rep(scale_factors_by_sample, times = n_spots_per_sample)
+
+# scale counts
+# skip this if not scaling (e.g. using Harmony later)
+counts(spe) <- t(t(counts(spe)) / scale_factors_by_sample_vec)
+
+
 # run smoothclust
-# note: no normalization across samples
 
 library(smoothclust)
 
-# run on raw counts and re-calculate logcounts
+# run on raw counts and re-calculate logcounts later
 assayNames(spe)
 
 # run separately per sample
@@ -65,6 +86,7 @@ spe_list
 # remove parts of object to reduce memory usage on laptop
 logcounts(spe) <- NULL
 reducedDims(spe) <- NULL
+assayNames(spe)
 
 
 # run smoothclust individually per sample
@@ -79,7 +101,7 @@ for (i in seq_along(sample_names)) {
                          method = "uniform", bandwidth = 0.05)
   print(Sys.time())
   
-  # remove counts assay to reduce memory usage
+  # remove normcounts assay to reduce memory usage
   print(assayNames(spe_sub))
   assay(spe_sub, "counts") <- NULL
   print(assayNames(spe_sub))
@@ -101,7 +123,8 @@ assayNames(spe_combined)
 table(colData(spe_combined)$sample_id)
 
 
-# re-calculate logcounts
+# calculate logcounts
+# note: spot-level normalization, in addition to any previous sample-level normalization
 library(scater)
 library(scran)
 spe_combined <- logNormCounts(spe_combined, assay.type = "counts_smooth")
@@ -139,7 +162,7 @@ dim(spe_combined)
 # Sys.time()
 # top_hvgs <- getTopHVGs(dec, prop = 0.1)
 
-# use previous set of HVGs
+# re-use previous set of HVGs for now
 table(rowData(spe_combined)$is_top_hvg)
 top_hvgs <- rowData(spe_combined)[rowData(spe_combined)$is_top_hvg, "gene_id"]
 length(top_hvgs)
@@ -154,17 +177,28 @@ Sys.time()
 spe_combined <- runPCA(spe_combined)
 Sys.time()
 
+# sample-level normalization using Harmony
+library(harmony)
+meta_data <- scale_factors_by_sample_vec
+names(meta_data) <- sample_ids
+harmony_embeddings <- RunHarmony(reducedDim(spe_combined, "PCA"), meta_data, "dataset")
+
+reducedDim(spe_combined, "HARM") <- harmony_embeddings
+
+
 # run k-means clustering (for selected number of clusters)
 set.seed(123)
 k <- 2
-clus <- kmeans(reducedDim(spe_combined, "PCA"), centers = k)$cluster
+#clus <- kmeans(reducedDim(spe_combined, "PCA"), centers = k)$cluster
+clus <- kmeans(reducedDim(spe_combined, "HARM"), centers = k)$cluster
 table(clus)
 colLabels(spe_combined) <- factor(clus)
 
 # alternatively: run graph-based clustering
 # set.seed(123)
 # k <- 20
-# g <- buildSNNGraph(spe_combined, k = k, use.dimred = "PCA")
+# #g <- buildSNNGraph(spe_combined, k = k, use.dimred = "PCA")
+# g <- buildSNNGraph(spe_combined, k = k, use.dimred = "HARM")
 # g_walk <- igraph::cluster_walktrap(g)
 # clus <- g_walk$membership
 # table(clus)
@@ -174,11 +208,19 @@ colLabels(spe_combined) <- factor(clus)
 # plot clustering
 
 # segments white matter quite well when using 2 clusters
+
 # clusters split by sample when using more clusters
+# using Harmony embeddings merges clusters across samples quite well
+# note: may need slightly larger bandwidth for smoother boundaries
+
 # note: re-calculate HVGs using higher memory on compute cluster
+# or calculate them individually per sample and then merge the vectors
 
 plotVisium(spe_combined, annotate = "label", 
            facets = "sample_id")#, pal = "libd_layer_colors")
+
+plotVisium(spe_combined, annotate = "label", 
+           facets = "sample_id", pal = "libd_layer_colors")
 
 plotVisium(spe_combined, annotate = "layer_guess_reordered_short", 
            facets = "sample_id", pal = "libd_layer_colors")
