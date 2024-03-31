@@ -66,25 +66,6 @@ spe_list
 logcounts(spe) <- NULL
 reducedDims(spe) <- NULL
 
-# assayNames(spe)
-# dim(spe)
-# head(colData(spe), 2)
-# head(rowData(spe), 2)
-# 
-# spe <- spe[rowData(spe)$is_top_hvg, ]
-# dim(spe)
-# assay(spe, "logcounts") <- NULL
-# colData(spe) <- colData(spe)[, c("sample_id", "sum_umi", "layer_guess_reordered_short")]
-# rowData(spe) <- rowData(spe)[, c("gene_id", "gene_name")]
-# reducedDims(spe) <- NULL
-# 
-# assayNames(spe)
-# head(colData(spe), 2)
-# head(rowData(spe), 2)
-# dim(spe)
-# 
-# counts(spe)[1:6, 1:6]
-
 
 # run smoothclust individually per sample
 for (i in seq_along(sample_names)) {
@@ -110,7 +91,10 @@ for (i in seq_along(sample_names)) {
 # stack into combined SPE object
 # note: large amount of memory needed
 
+# slow (~30 sec)
+Sys.time()
 spe_combined <- do.call("cbind", spe_list)
+Sys.time()
 
 dim(spe_combined)
 assayNames(spe_combined)
@@ -123,6 +107,13 @@ library(scran)
 spe_combined <- logNormCounts(spe_combined, assay.type = "counts_smooth")
 assayNames(spe_combined)
 
+# remove parts of object to reduce memory usage
+assay(spe_combined, "counts_smooth") <- NULL
+# remove objects to reduce memory usage
+rm(spe)
+rm(spe_list)
+rm(spe_sub)
+
 
 # clustering
 
@@ -130,20 +121,38 @@ assayNames(spe_combined)
 # remove mitochondrial genes
 is_mito <- grepl("(^mt-)", rowData(spe_combined)$gene_name, ignore.case = TRUE)
 table(is_mito)
+# slow (~10 sec)
+Sys.time()
 spe_combined <- spe_combined[!is_mito, ]
+Sys.time()
 dim(spe_combined)
 
 # select top highly variable genes (HVGs)
-dec <- modelGeneVar(spe_combined)
-top_hvgs <- getTopHVGs(dec, prop = 0.1)
+# slow / high memory usage
+# need to run on compute cluster instead due to memory requirements
+# use previous set of HVGs for now
+# library(BiocParallel)
+# Sys.time()
+# dec <- modelGeneVar(spe_combined, 
+#                     block = as.factor(colData(spe_combined)$sample_id), 
+#                     BPPARAM = MulticoreParam(workers = 6))
+# Sys.time()
+# top_hvgs <- getTopHVGs(dec, prop = 0.1)
+
+# use previous set of HVGs
+table(rowData(spe_combined)$is_top_hvg)
+top_hvgs <- rowData(spe_combined)[rowData(spe_combined)$is_top_hvg, "gene_id"]
 length(top_hvgs)
 spe_combined <- spe_combined[top_hvgs, ]
 dim(spe_combined)
 
 # dimensionality reduction
 # compute PCA on top HVGs
+# slow (~1-2 min)
 set.seed(123)
+Sys.time()
 spe_combined <- runPCA(spe_combined)
+Sys.time()
 
 # run k-means clustering (for selected number of clusters)
 set.seed(123)
@@ -163,6 +172,10 @@ colLabels(spe_combined) <- factor(clus)
 
 
 # plot clustering
+
+# segments white matter quite well when using 2 clusters
+# clusters split by sample when using more clusters
+# note: re-calculate HVGs using higher memory on compute cluster
 
 plotVisium(spe_combined, annotate = "label", 
            facets = "sample_id")#, pal = "libd_layer_colors")
