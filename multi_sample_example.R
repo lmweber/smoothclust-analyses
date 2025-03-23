@@ -1,5 +1,4 @@
 # Clustering example for multi-sample data
-# Lukas Weber, 2024-03-30
 
 # run on compute cluster due to memory usage
 
@@ -20,8 +19,11 @@ table(colData(spe)$layer_guess_reordered_short)
 library(ggspavis)
 
 plotVisium(spe, annotate = "layer_guess_reordered_short", 
-           facets = "sample_id", pal = "libd_layer_colors") + 
+           facets = "sample_id", pal = "libd_layer_colors", 
+           point_size = 0.4) + 
   guides(fill = guide_legend(title = "layer"))
+
+ggsave("plots/DLPFC_12_samples_reference_labels.png", width = 8, height = 6)
 
 
 # check distributions of UMI counts per sample
@@ -40,10 +42,15 @@ ggplot(df, aes(x = sample_id, y = sum_umi, color = sample_id)) +
   geom_boxplot(color = "black", fill = NA) + 
   theme_bw()
 
+ggsave("plots/DLPFC_UMI_by_sample.png", width = 7, height = 4.5)
+
+
 # plot by sample and layer
 ggplot(df, aes(x = sample_id, y = sum_umi, color = layer)) + 
-  geom_boxplot() + 
+  geom_boxplot(outlier.size = 0.1) + 
   theme_bw()
+
+ggsave("plots/DLPFC_UMI_by_sample_layer.png", width = 7, height = 4.5)
 
 
 # simple normalization by sample (by mean sum UMIs across spots per sample)
@@ -65,12 +72,49 @@ scale_factors_by_sample_vec <- rep(scale_factors_by_sample, times = n_spots_per_
 
 # scale counts
 # skip this if not scaling (e.g. using Harmony later)
-counts(spe) <- t(t(counts(spe)) / scale_factors_by_sample_vec)
+# counts(spe) <- t(t(counts(spe)) / scale_factors_by_sample_vec)
+
+
+# small version for laptop (due to memory usage)
+# dim(spe)
+# ix_keep <- colData(spe)$sample_id %in% c("151673", "151674", "151675", "151676")
+# table(ix_keep)
+# spe <- spe[, ix_keep]
+# dim(spe)
+# 
+# scale_factors_by_sample_vec <- scale_factors_by_sample_vec[ix_keep]
+# length(scale_factors_by_sample_vec)
+# 
+# sample_ids <- sample_ids[ix_keep]
+# length(sample_ids)
+
+
+# remove genes with low or zero expression
+# for memory usage on laptop
+# remove this part for full analysis
+
+dim(spe)
+is_low <- rowSums(counts(spe)) <= 1000
+table(is_low)
+
+spe <- spe[!is_low, ]
+
+dim(spe)
+
+table(colData(spe)$sample_id)
+table(colData(spe)$in_tissue)
 
 
 # run smoothclust
 
 library(smoothclust)
+
+# run on 4 samples only
+sample_names <- names(table(colData(spe)$sample_id))
+sample_names
+keep_sample_ids <- colData(spe)$sample_id %in% sample_names[9:12]
+spe <- spe[, keep_sample_ids]
+dim(spe)
 
 # run on raw counts and re-calculate logcounts later
 assayNames(spe)
@@ -82,6 +126,7 @@ sample_names
 spe_list <- as.list(rep(NA, length(sample_names)))
 names(spe_list) <- sample_names
 spe_list
+length(spe_list)
 
 # remove parts of object to reduce memory usage on laptop
 logcounts(spe) <- NULL
@@ -113,10 +158,34 @@ for (i in seq_along(sample_names)) {
 # stack into combined SPE object
 # note: large amount of memory needed
 
-# slow (~30 sec)
+# slow (~ up to 30 sec)
 Sys.time()
 spe_combined <- do.call("cbind", spe_list)
 Sys.time()
+
+
+## alternatively: combine sequentially to handle low memory on laptop
+# rm(spe_sub)
+# rm(spe)
+# 
+# sapply(spe_list, ncol)
+# sum(sapply(spe_list, ncol))
+# 
+# spe_comb <- spe_list[1:2]
+# spe_comb <- do.call("cbind", spe_comb)
+# dim(spe_comb)
+# spe_list <- spe_list[-c(1:2)]
+# length(spe_list)
+# 
+# spe_comb <- c(list(spe_comb), spe_list[1])
+# spe_comb <- do.call("cbind", spe_comb)
+# dim(spe_comb)
+# spe_list <- spe_list[-1]
+# length(spe_list)
+# 
+# spe_combined <- spe_comb
+# rm(spe_comb)
+
 
 dim(spe_combined)
 assayNames(spe_combined)
@@ -130,12 +199,12 @@ library(scran)
 spe_combined <- logNormCounts(spe_combined, assay.type = "counts_smooth")
 assayNames(spe_combined)
 
-# remove parts of object to reduce memory usage
-assay(spe_combined, "counts_smooth") <- NULL
-# remove objects to reduce memory usage
-rm(spe)
-rm(spe_list)
-rm(spe_sub)
+# # remove parts of object to reduce memory usage
+# assay(spe_combined, "counts_smooth") <- NULL
+# # remove objects to reduce memory usage
+# rm(spe)
+# rm(spe_list)
+# rm(spe_sub)
 
 
 # clustering
@@ -144,7 +213,7 @@ rm(spe_sub)
 # remove mitochondrial genes
 is_mito <- grepl("(^mt-)", rowData(spe_combined)$gene_name, ignore.case = TRUE)
 table(is_mito)
-# slow (~10 sec)
+# slow (~ up to 10 sec)
 Sys.time()
 spe_combined <- spe_combined[!is_mito, ]
 Sys.time()
@@ -171,7 +240,7 @@ dim(spe_combined)
 
 # dimensionality reduction
 # compute PCA on top HVGs
-# slow (~1-2 min)
+# slow (~ up to 1-2 min)
 set.seed(123)
 Sys.time()
 spe_combined <- runPCA(spe_combined)
@@ -179,8 +248,8 @@ Sys.time()
 
 # sample-level normalization using Harmony
 library(harmony)
-meta_data <- scale_factors_by_sample_vec
-names(meta_data) <- sample_ids
+meta_data <- scale_factors_by_sample_vec[keep_sample_ids]
+names(meta_data) <- sample_ids[keep_sample_ids]
 harmony_embeddings <- RunHarmony(reducedDim(spe_combined, "PCA"), meta_data, "dataset")
 
 reducedDim(spe_combined, "HARM") <- harmony_embeddings
@@ -189,6 +258,7 @@ reducedDim(spe_combined, "HARM") <- harmony_embeddings
 # run k-means clustering (for selected number of clusters)
 set.seed(123)
 k <- 2
+# use either PCA or HARM embeddings as input for clustering
 #clus <- kmeans(reducedDim(spe_combined, "PCA"), centers = k)$cluster
 clus <- kmeans(reducedDim(spe_combined, "HARM"), centers = k)$cluster
 table(clus)
@@ -216,11 +286,22 @@ colLabels(spe_combined) <- factor(clus)
 # note: re-calculate HVGs using higher memory on compute cluster
 # or calculate them individually per sample and then merge the vectors
 
-plotVisium(spe_combined, annotate = "label", 
-           facets = "sample_id")#, pal = "libd_layer_colors")
+library(ggspavis)
 
 plotVisium(spe_combined, annotate = "label", 
            facets = "sample_id", pal = "libd_layer_colors")
+
+plotVisium(spe_combined, annotate = "label", 
+           facets = "sample_id", pal = c("goldenrod1", "cornflowerblue"))#, "tomato"))
+
+ggsave("plots/smoothclust_DLPFC_samples9-12_bandwidth005_2clusters.png", width = 6, height = 6)
+
+
+# libd_layer_colors <-  c("#F0027F", "#377EB8", "#4DAF4A", "#984EA3", 
+#                         "#FFD700", "#FF7F00", "#1A1A1A", "#666666")
 
 plotVisium(spe_combined, annotate = "layer_guess_reordered_short", 
-           facets = "sample_id", pal = "libd_layer_colors")
+           facets = "sample_id", pal = "libd_layer_colors") + 
+  guides(fill = guide_legend(title = "layer"))
+
+ggsave("plots/smoothclust_DLPFC_samples9-12_reference.png", width = 6, height = 6)
