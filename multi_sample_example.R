@@ -1,7 +1,5 @@
 # Clustering example for multi-sample data
 
-# run on compute cluster due to memory usage
-
 
 # download data
 
@@ -39,7 +37,7 @@ head(df)
 # plot by sample
 ggplot(df, aes(x = sample_id, y = sum_umi, color = sample_id)) + 
   geom_jitter(alpha = 0.1) + 
-  geom_boxplot(color = "black", fill = NA) + 
+  geom_boxplot(color = "black", fill = NA, outlier.size = 0.1) + 
   theme_bw()
 
 ggsave("plots/DLPFC_UMI_by_sample.png", width = 7, height = 4.5)
