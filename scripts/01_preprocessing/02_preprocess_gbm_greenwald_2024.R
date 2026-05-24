@@ -143,5 +143,5 @@ metadata(spe)$sample_metadata <- sample_metadata
 
 saveRDS(
   spe,
-  file = file.path(processed_dir, "gbm_greenwald_2024_spe.rds")
+  file = file.path(processed_dir, "spe_gbm_greenwald_2024.rds")
 )
