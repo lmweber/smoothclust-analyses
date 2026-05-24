@@ -182,7 +182,13 @@ write.csv(
   row.names = FALSE
 )
 
+
+# create and save lightweight SPE object for plotting
+
+spe_plot <- spe[0, ]
+reducedDims(spe_plot) <- S4Vectors::SimpleList()
+
 saveRDS(
-  spe,
-  file = file.path(results_dir, "spe_gbm_greenwald_2024_boundary_density.rds")
+  spe_plot,
+  file = file.path(results_dir, "spe_gbm_greenwald_2024_bd_plot.rds")
 )
