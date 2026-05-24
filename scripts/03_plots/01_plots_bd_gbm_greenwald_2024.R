@@ -6,6 +6,8 @@
 # run from root directory of smoothclust-analyses repo
 
 library(ggplot2)
+library(ggspavis)
+library(SpatialExperiment)
 
 dataset_id <- "gbm_greenwald_2024"
 
@@ -13,7 +15,10 @@ repo_dir <- "."
 results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
 plots_dir <- file.path(repo_dir, "plots", dataset_id, "boundary_density")
 
+dir.create(plots_dir, recursive = TRUE, showWarnings = FALSE)
+
 summary_file <- file.path(results_dir, "gbm_boundary_density_summary.csv")
+spe_plot <- file.path(results_dir, "spe_gbm_greenwald_2024_bd_plot.rds")
 
 
 # load data
@@ -135,3 +140,55 @@ ggsave(
   height = 5,
   dpi = 300
 )
+
+
+# spatial maps
+
+spe <- readRDS(spe_plot)
+
+cluster_plots_dir <- file.path(plots_dir, "cluster_maps")
+local_bd_plots_dir <- file.path(plots_dir, "local_bd_maps")
+
+sample_ids <- sort(unique(as.character(colData(spe)$sample_id)))
+label_cols <- as.character(levels(bd$label_col))
+cluster_palette <- unname(palette.colors(36, "Polychrome 36"))
+
+for (label_col in label_cols) {
+  local_col <- paste0("local_bd_", label_col)
+  
+  for (sample_id in sample_ids) {
+    spe_sub <- spe[, as.character(colData(spe)$sample_id) == sample_id]
+    
+    p <- plotCoords(
+      spe_sub,
+      annotate = label_col,
+      pal = cluster_palette,
+      point_size = 0.3
+    ) +
+      ggtitle(paste(sample_id, label_col))
+    
+    ggsave(
+      file.path(cluster_plots_dir, paste0("gbm_cluster_map_", label_col, "_", sample_id, ".png")),
+      p,
+      width = 4,
+      height = 4,
+      dpi = 300
+    )
+    
+    p <- plotCoords(
+      spe_sub,
+      annotate = local_col,
+      pal = "magma",
+      point_size = 0.3
+    ) +
+      ggtitle(paste(sample_id, local_col))
+    
+    ggsave(
+      file.path(local_bd_plots_dir, paste0("gbm_local_bd_map_", label_col, "_", sample_id, ".png")),
+      p,
+      width = 4,
+      height = 4,
+      dpi = 300
+    )
+  }
+}
