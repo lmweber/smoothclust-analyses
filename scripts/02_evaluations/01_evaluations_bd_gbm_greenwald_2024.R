@@ -181,3 +181,8 @@ write.csv(
   file = file.path(results_dir, "gbm_boundary_density_parameters.csv"),
   row.names = FALSE
 )
+
+saveRDS(
+  spe,
+  file = file.path(results_dir, "spe_gbm_greenwald_2024_boundary_density.rds")
+)
