@@ -58,88 +58,65 @@ spe <- spe[gene_filter, ]
 dim(spe)
 
 
-# run smoothclust separately for each sample
+# run smoothclust and clustering separately for each sample
 
-spe_list <- lapply(sample_ids, function(sample_id) {
-  message("Running smoothclust: ", sample_id)
+label_cols <- paste0("smoothclust_k", cluster_numbers)
+spe_list <- list()
+bd_summary <- data.frame()
+
+for (sample_id in sample_ids) {
+  message("Processing sample: ", sample_id)
   spe_sub <- spe[, as.character(colData(spe)$sample_id) == sample_id]
-  smoothclust(
+  
+  spe_sub <- smoothclust(
     spe_sub,
     assay_name = "counts",
     method = smoothing_method,
     bandwidth = smoothing_bandwidth, 
     n_threads = 14
   )
-})
-
-names(spe_list) <- sample_ids
-spe <- do.call(cbind, spe_list)
-
-
-# normalize, select HVGs, and compute PCA
-
-spe <- logNormCounts(spe, assay.type = "counts_smooth")
-
-dec <- modelGeneVar(
-  spe,
-  block = factor(colData(spe)$sample_id)
-)
-
-top_hvgs <- getTopHVGs(dec, prop = hvg_prop)
-
-set.seed(seed)
-spe <- runPCA(
-  spe,
-  subset_row = top_hvgs,
-  ncomponents = n_pcs
-)
-
-
-# cluster domains
-
-pca <- reducedDim(spe, "PCA")
-label_cols <- paste0("smoothclust_k", cluster_numbers)
-
-for (i in seq_along(cluster_numbers)) {
-  n_clusters <- cluster_numbers[i]
-  label_col <- label_cols[i]
   
-  set.seed(seed + n_clusters)
-  clus <- kmeans(pca, centers = n_clusters, nstart = 25)$cluster
-  print(table(clus))
-  colData(spe)[[label_col]] <- factor(clus)
-}
-
-
-# calculate boundary density
-
-bd_summary <- data.frame()
-
-for (label_col in label_cols) {
-  local_col <- paste0("local_bd_", label_col)
-  colData(spe)[[local_col]] <- NA_real_
-  n_clusters <- as.integer(sub("smoothclust_k", "", label_col))
+  spe_sub <- logNormCounts(spe_sub, assay.type = "counts_smooth")
   
-  for (sample_id in sample_ids) {
-    ix <- which(as.character(colData(spe)$sample_id) == sample_id)
+  dec <- modelGeneVar(spe_sub)
+  top_hvgs <- getTopHVGs(dec, prop = hvg_prop)
+  
+  set.seed(seed)
+  spe_sub <- runPCA(
+    spe_sub,
+    subset_row = top_hvgs,
+    ncomponents = n_pcs
+  )
+  
+  pca <- reducedDim(spe_sub, "PCA")
+
+  for (i in seq_along(cluster_numbers)) {
+    n_clusters <- cluster_numbers[i]
+    label_col <- label_cols[i]
+    local_col <- paste0("local_bd_", label_col)
+    
+    set.seed(seed + n_clusters)
+    clus <- kmeans(pca, centers = n_clusters, nstart = 25)$cluster
+    print(table(clus))
+    colData(spe_sub)[[label_col]] <- factor(clus, levels = seq_len(n_clusters))
     
     bd <- boundary_density(
-      spatialCoords(spe)[ix, , drop = FALSE],
-      colData(spe)[[label_col]][ix],
+      spatialCoords(spe_sub),
+      colData(spe_sub)[[label_col]],
       k = boundary_k,
       adjust = "analytic"
     )
     
-    colData(spe)[[local_col]][ix] <- bd$local_boundary_density
+    colData(spe_sub)[[local_col]] <- bd$local_boundary_density
     
     bd_summary <- rbind(
       bd_summary,
       data.frame(
         sample_id = sample_id,
-        geo_sample_id = unique(as.character(colData(spe)$geo_sample_id[ix]))[1],
+        geo_sample_id = unique(as.character(colData(spe_sub)$geo_sample_id))[1],
         label_col = label_col,
         n_clusters = n_clusters,
-        n_spots = length(ix),
+        n_spots = ncol(spe_sub),
         boundary_k = boundary_k,
         smoothing_method = smoothing_method,
         smoothing_bandwidth = smoothing_bandwidth,
@@ -152,7 +129,11 @@ for (label_col in label_cols) {
       )
     )
   }
+  
+  spe_list[[sample_id]] <- spe_sub
 }
+
+spe <- do.call(cbind, spe_list)
 
 
 # save outputs
@@ -160,6 +141,7 @@ for (label_col in label_cols) {
 parameters <- data.frame(
   dataset_id = dataset_id,
   input_file = input_file,
+  clustering_scope = "per_sample",
   smoothing_method = smoothing_method,
   smoothing_bandwidth = smoothing_bandwidth,
   boundary_k = boundary_k,

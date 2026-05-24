@@ -158,6 +158,8 @@ cluster_palette <- unname(palette.colors(36, "Polychrome 36"))
 
 for (label_col in label_cols) {
   local_col <- paste0("local_bd_", label_col)
+  n_clusters <- as.integer(sub("smoothclust_k", "", label_col))
+  pal <- cluster_palette[seq_len(n_clusters)]
   
   for (sample_id in sample_ids) {
     spe_sub <- spe[, as.character(colData(spe)$sample_id) == sample_id]
@@ -165,7 +167,7 @@ for (label_col in label_cols) {
     p <- plotCoords(
       spe_sub,
       annotate = label_col,
-      pal = cluster_palette,
+      pal = pal,
       point_size = 0.3
     ) +
       ggtitle(paste(sample_id, label_col))
