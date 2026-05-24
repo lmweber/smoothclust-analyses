@@ -170,7 +170,7 @@ for (label_col in label_cols) {
       spe_sub,
       annotate = label_col,
       pal = pal,
-      point_size = 0.3
+      point_size = 1.0
     ) +
       ggtitle(paste(sample_id, label_col))
     
@@ -186,7 +186,7 @@ for (label_col in label_cols) {
       spe_sub,
       annotate = local_col,
       pal = "magma",
-      point_size = 0.3
+      point_size = 1.0
     ) +
       ggtitle(paste(sample_id, local_col))
     
