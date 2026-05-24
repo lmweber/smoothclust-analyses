@@ -149,6 +149,9 @@ spe <- readRDS(spe_plot)
 cluster_plots_dir <- file.path(plots_dir, "cluster_maps")
 local_bd_plots_dir <- file.path(plots_dir, "local_bd_maps")
 
+dir.create(cluster_plots_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(local_bd_plots_dir, recursive = TRUE, showWarnings = FALSE)
+
 sample_ids <- sort(unique(as.character(colData(spe)$sample_id)))
 label_cols <- as.character(levels(bd$label_col))
 cluster_palette <- unname(palette.colors(36, "Polychrome 36"))

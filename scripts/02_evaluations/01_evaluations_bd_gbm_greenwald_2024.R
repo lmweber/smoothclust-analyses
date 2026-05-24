@@ -106,6 +106,7 @@ for (i in seq_along(cluster_numbers)) {
   
   set.seed(seed + n_clusters)
   clus <- kmeans(pca, centers = n_clusters, nstart = 25)$cluster
+  print(table(clus))
   colData(spe)[[label_col]] <- factor(clus)
 }
 
