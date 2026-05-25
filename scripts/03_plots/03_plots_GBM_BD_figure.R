@@ -114,8 +114,8 @@ p_smooth_domains <- plotCoords(
   ) +
   theme(
     legend.position = "none",
-    plot.title = element_text(face = "bold", size = 10),
-    plot.subtitle = element_text(size = 8)
+    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
+    plot.subtitle = element_text(size = 8, hjust = 0.5)
   )
 
 p_local_bd <- plotCoords(
@@ -131,8 +131,8 @@ p_local_bd <- plotCoords(
   ) +
   theme(
     legend.position = "right",
-    plot.title = element_text(face = "bold", size = 10),
-    plot.subtitle = element_text(size = 8),
+    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
+    plot.subtitle = element_text(size = 8, hjust = 0.5),
     legend.title = element_text(size = 8),
     legend.text = element_text(size = 7)
   )
@@ -150,8 +150,8 @@ p_baseline_domains <- plotCoords(
   ) +
   theme(
     legend.position = "none",
-    plot.title = element_text(face = "bold", size = 10),
-    plot.subtitle = element_text(size = 8)
+    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
+    plot.subtitle = element_text(size = 8, hjust = 0.5)
   )
 
 
