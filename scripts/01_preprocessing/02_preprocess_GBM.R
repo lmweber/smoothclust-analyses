@@ -10,13 +10,15 @@ library(BiocIO)
 library(Matrix)
 library(SpatialExperiment)
 
-dataset_id <- "gbm_greenwald_2024"
+dataset_id <- "GBM"
 geo_accession <- "GSE237183"
 
 repo_dir <- "."
 data_dir <- file.path(repo_dir, "data", dataset_id)
 extracted_dir <- file.path(data_dir, "extracted")
 processed_dir <- file.path(data_dir, "processed")
+
+dir.create(processed_dir, recursive = TRUE, showWarnings = FALSE)
 
 
 # find samples
@@ -51,6 +53,7 @@ prepare_visium_folder <- function(sample_prefix, sample_dir) {
   outs_dir <- file.path(sample_dir, "outs")
   matrix_dir <- file.path(outs_dir, "filtered_feature_bc_matrix")
   spatial_dir <- file.path(outs_dir, "spatial")
+  dir.create(spatial_dir, recursive = TRUE, showWarnings = FALSE)
   
   matrix_suffixes <- c("matrix.mtx.gz", "features.tsv.gz", "barcodes.tsv.gz")
   for (suffix in matrix_suffixes) {
@@ -143,5 +146,5 @@ metadata(spe)$sample_metadata <- sample_metadata
 
 saveRDS(
   spe,
-  file = file.path(processed_dir, "spe_gbm_greenwald_2024.rds")
+  file = file.path(processed_dir, "spe_GBM.rds")
 )

@@ -5,7 +5,7 @@
 
 # run from root directory of smoothclust-analyses repo
 
-dataset_id <- "gbm_greenwald_2024"
+dataset_id <- "GBM"
 geo_accession <- "GSE237183"
 
 repo_dir <- "."
@@ -34,6 +34,10 @@ zenodo_url <- "https://zenodo.org/records/12624860"
 github_url <- "https://github.com/tiroshlab/Spatial_Glioma"
 
 raw_archive <- file.path(raw_dir, paste0(geo_accession, "_RAW.tar"))
+
+dir.create(raw_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(extracted_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(processed_dir, recursive = TRUE, showWarnings = FALSE)
 
 
 # download data

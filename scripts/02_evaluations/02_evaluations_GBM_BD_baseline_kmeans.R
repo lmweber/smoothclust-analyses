@@ -12,14 +12,14 @@ library(scater)
 library(scran)
 library(scuttle)
 
-dataset_id <- "gbm_greenwald_2024"
+dataset_id <- "GBM"
 
 repo_dir <- "."
 data_dir <- file.path(repo_dir, "data", dataset_id)
 processed_dir <- file.path(data_dir, "processed")
 results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
 
-input_file <- file.path(processed_dir, "spe_gbm_greenwald_2024.rds")
+input_file <- file.path(processed_dir, "spe_GBM.rds")
 
 baseline_method <- "baseline_unsmoothed_kmeans"
 assay_name <- "counts"
@@ -164,13 +164,13 @@ parameters <- data.frame(
 
 write.csv(
   bd_summary,
-  file = file.path(results_dir, "gbm_boundary_density_baseline_kmeans_summary.csv"),
+  file = file.path(results_dir, "GBM_BD_baseline_kmeans_summary.csv"),
   row.names = FALSE
 )
 
 write.csv(
   parameters,
-  file = file.path(results_dir, "gbm_boundary_density_baseline_kmeans_parameters.csv"),
+  file = file.path(results_dir, "GBM_BD_baseline_kmeans_parameters.csv"),
   row.names = FALSE
 )
 
@@ -182,5 +182,5 @@ reducedDims(spe_plot) <- S4Vectors::SimpleList()
 
 saveRDS(
   spe_plot,
-  file = file.path(results_dir, "spe_gbm_greenwald_2024_baseline_kmeans_bd_plot.rds")
+  file = file.path(results_dir, "spe_GBM_baseline_kmeans_BD_plot.rds")
 )

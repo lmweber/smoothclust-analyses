@@ -9,7 +9,7 @@ library(ggplot2)
 library(ggspavis)
 library(SpatialExperiment)
 
-dataset_id <- "gbm_greenwald_2024"
+dataset_id <- "GBM"
 
 repo_dir <- "."
 results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
@@ -19,8 +19,8 @@ summary_plots_dir <- file.path(plots_dir, "summary_plots")
 dir.create(plots_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(summary_plots_dir, recursive = TRUE, showWarnings = FALSE)
 
-summary_file <- file.path(results_dir, "gbm_boundary_density_summary.csv")
-spe_plot <- file.path(results_dir, "spe_gbm_greenwald_2024_bd_plot.rds")
+summary_file <- file.path(results_dir, "GBM_BD_summary.csv")
+spe_plot <- file.path(results_dir, "spe_GBM_BD_plot.rds")
 
 
 # load data
@@ -52,7 +52,7 @@ ggplot(bd, aes(x = n_clusters, y = boundary_density, group = sample_id, color = 
   theme(legend.position = "right")
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_bd_by_nclusters.png"),
+  file.path(summary_plots_dir, "GBM_BD_by_nclusters.png"),
   width = 8,
   height = 5,
   dpi = 300
@@ -69,7 +69,7 @@ ggplot(bd, aes(x = n_clusters, y = mean_discordant, group = sample_id, color = s
   theme(legend.position = "right")
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_mean_discordant_by_nclusters.png"),
+  file.path(summary_plots_dir, "GBM_mean_discordant_by_nclusters.png"),
   width = 8,
   height = 5,
   dpi = 300
@@ -87,7 +87,7 @@ ggplot(bd, aes(x = n_clusters, y = relative_boundary_density, group = sample_id,
   theme(legend.position = "right")
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_relative_bd_by_nclusters.png"),
+  file.path(summary_plots_dir, "GBM_relative_BD_by_nclusters.png"),
   width = 8,
   height = 5,
   dpi = 300
@@ -103,7 +103,7 @@ ggplot(bd, aes(x = factor(n_clusters), y = sample_id, fill = boundary_density)) 
   theme(panel.grid = element_blank())
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_bd_heatmap.png"),
+  file.path(summary_plots_dir, "GBM_BD_heatmap.png"),
   width = 6,
   height = 6,
   dpi = 300
@@ -119,7 +119,7 @@ ggplot(bd, aes(x = factor(n_clusters), y = sample_id, fill = relative_boundary_d
   theme(panel.grid = element_blank())
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_relative_bd_heatmap.png"),
+  file.path(summary_plots_dir, "GBM_relative_BD_heatmap.png"),
   width = 6,
   height = 6,
   dpi = 300
@@ -137,7 +137,7 @@ ggplot(bd, aes(x = expected_boundary_density, y = boundary_density, color = fact
   theme(legend.position = "right")
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_bd_vs_expected_bd.png"),
+  file.path(summary_plots_dir, "GBM_BD_vs_expected_BD.png"),
   width = 5.5,
   height = 5,
   dpi = 300
@@ -149,7 +149,7 @@ ggsave(
 spe <- readRDS(spe_plot)
 
 cluster_plots_dir <- file.path(plots_dir, "cluster_maps")
-local_bd_plots_dir <- file.path(plots_dir, "local_bd_maps")
+local_bd_plots_dir <- file.path(plots_dir, "local_BD_maps")
 
 dir.create(cluster_plots_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(local_bd_plots_dir, recursive = TRUE, showWarnings = FALSE)
@@ -175,7 +175,7 @@ for (label_col in label_cols) {
       ggtitle(paste(sample_id, label_col))
     
     ggsave(
-      file.path(cluster_plots_dir, paste0("gbm_cluster_map_", label_col, "_", sample_id, ".png")),
+      file.path(cluster_plots_dir, paste0("GBM_cluster_map_", label_col, "_", sample_id, ".png")),
       p,
       width = 4,
       height = 4,
@@ -191,7 +191,7 @@ for (label_col in label_cols) {
       ggtitle(paste(sample_id, local_col))
     
     ggsave(
-      file.path(local_bd_plots_dir, paste0("gbm_local_bd_map_", label_col, "_", sample_id, ".png")),
+      file.path(local_bd_plots_dir, paste0("GBM_local_BD_map_", label_col, "_", sample_id, ".png")),
       p,
       width = 4,
       height = 4,

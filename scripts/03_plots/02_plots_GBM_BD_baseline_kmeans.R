@@ -9,7 +9,7 @@ library(ggplot2)
 library(ggspavis)
 library(SpatialExperiment)
 
-dataset_id <- "gbm_greenwald_2024"
+dataset_id <- "GBM"
 
 repo_dir <- "."
 results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
@@ -17,16 +17,16 @@ plots_dir <- file.path(repo_dir, "plots", dataset_id, "boundary_density")
 comparison_plots_dir <- file.path(plots_dir, "baseline_kmeans_comparison")
 summary_plots_dir <- file.path(comparison_plots_dir, "summary_plots")
 cluster_plots_dir <- file.path(comparison_plots_dir, "baseline_cluster_maps")
-local_bd_plots_dir <- file.path(comparison_plots_dir, "baseline_local_bd_maps")
+local_bd_plots_dir <- file.path(comparison_plots_dir, "baseline_local_BD_maps")
 
 dir.create(comparison_plots_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(summary_plots_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(cluster_plots_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(local_bd_plots_dir, recursive = TRUE, showWarnings = FALSE)
 
-smoothclust_summary_file <- file.path(results_dir, "gbm_boundary_density_summary.csv")
-baseline_summary_file <- file.path(results_dir, "gbm_boundary_density_baseline_kmeans_summary.csv")
-baseline_spe_plot_file <- file.path(results_dir, "spe_gbm_greenwald_2024_baseline_kmeans_bd_plot.rds")
+smoothclust_summary_file <- file.path(results_dir, "GBM_BD_summary.csv")
+baseline_summary_file <- file.path(results_dir, "GBM_BD_baseline_kmeans_summary.csv")
+baseline_spe_plot_file <- file.path(results_dir, "spe_GBM_baseline_kmeans_BD_plot.rds")
 
 
 # load data
@@ -97,7 +97,7 @@ ggplot(bd, aes(
   theme(legend.position = "right")
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_baseline_comparison_bd_by_nclusters.png"),
+  file.path(summary_plots_dir, "GBM_baseline_comparison_BD_by_nclusters.png"),
   width = 7,
   height = 4.5,
   dpi = 300
@@ -122,7 +122,7 @@ ggplot(bd, aes(
   theme(legend.position = "right")
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_baseline_comparison_relative_bd_by_nclusters.png"),
+  file.path(summary_plots_dir, "GBM_baseline_comparison_relative_BD_by_nclusters.png"),
   width = 7,
   height = 4.5,
   dpi = 300
@@ -143,7 +143,7 @@ ggplot(bd_wide, aes(x = boundary_density_smoothclust, y = boundary_density_basel
   theme(legend.position = "right")
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_baseline_vs_smoothclust_bd_scatter.png"),
+  file.path(summary_plots_dir, "GBM_baseline_vs_smoothclust_BD_scatter.png"),
   width = 5.5,
   height = 5,
   dpi = 300
@@ -164,7 +164,7 @@ ggplot(bd_wide, aes(
   theme(legend.position = "right")
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_baseline_vs_smoothclust_relative_bd_scatter.png"),
+  file.path(summary_plots_dir, "GBM_baseline_vs_smoothclust_relative_BD_scatter.png"),
   width = 5.5,
   height = 5,
   dpi = 300
@@ -183,7 +183,7 @@ ggplot(bd_wide, aes(x = factor(n_clusters), y = boundary_density_difference)) +
   )
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_baseline_minus_smoothclust_bd_by_nclusters.png"),
+  file.path(summary_plots_dir, "GBM_baseline_minus_smoothclust_BD_by_nclusters.png"),
   width = 6,
   height = 4.5,
   dpi = 300
@@ -199,7 +199,7 @@ ggplot(bd_wide, aes(x = factor(n_clusters), y = relative_boundary_density_differ
   )
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_baseline_minus_smoothclust_relative_bd_by_nclusters.png"),
+  file.path(summary_plots_dir, "GBM_baseline_minus_smoothclust_relative_BD_by_nclusters.png"),
   width = 6,
   height = 4.5,
   dpi = 300
@@ -225,7 +225,7 @@ ggplot(bd_wide, aes(
   theme(panel.grid = element_blank())
 
 ggsave(
-  file.path(summary_plots_dir, "gbm_baseline_minus_smoothclust_bd_heatmap.png"),
+  file.path(summary_plots_dir, "GBM_baseline_minus_smoothclust_BD_heatmap.png"),
   width = 6,
   height = 6,
   dpi = 300
@@ -257,7 +257,7 @@ for (label_col in label_cols) {
       ggtitle(paste(sample_id, label_col))
     
     ggsave(
-      file.path(cluster_plots_dir, paste0("gbm_baseline_cluster_map_", label_col, "_", sample_id, ".png")),
+      file.path(cluster_plots_dir, paste0("GBM_baseline_cluster_map_", label_col, "_", sample_id, ".png")),
       p,
       width = 4,
       height = 4,
@@ -273,7 +273,7 @@ for (label_col in label_cols) {
       ggtitle(paste(sample_id, local_col))
     
     ggsave(
-      file.path(local_bd_plots_dir, paste0("gbm_baseline_local_bd_map_", label_col, "_", sample_id, ".png")),
+      file.path(local_bd_plots_dir, paste0("GBM_baseline_local_BD_map_", label_col, "_", sample_id, ".png")),
       p,
       width = 4,
       height = 4,
