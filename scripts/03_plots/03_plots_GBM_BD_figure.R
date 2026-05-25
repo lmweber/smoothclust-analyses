@@ -78,7 +78,16 @@ bd_wide$sample_id <- factor(bd_wide$sample_id, levels = rev(sample_order))
 
 theme_set(theme_bw(base_size = 9))
 
-cluster_palette <- unname(palette.colors(36, "Polychrome 36"))
+cluster_palette <- c(
+  "#0072B2",
+  "#E69F00",
+  "#009E73",
+  "#CC79A7",
+  "#56B4E9",
+  "#F0E442",
+  "#D55E00",
+  "#000000"
+)
 domain_palette <- cluster_palette[seq_len(n_clusters)]
 local_bd_palette <- c("gray92", "#e31a1c")
 

@@ -256,7 +256,16 @@ spe_baseline <- readRDS(baseline_spe_plot_file)
 
 sample_ids <- sort(unique(as.character(colData(spe_baseline)$sample_id)))
 label_cols <- paste0("baseline_kmeans_k", sort(unique(bd_baseline$n_clusters)))
-cluster_palette <- unname(palette.colors(36, "Polychrome 36"))
+cluster_palette <- c(
+  "#0072B2",
+  "#E69F00",
+  "#009E73",
+  "#CC79A7",
+  "#56B4E9",
+  "#F0E442",
+  "#D55E00",
+  "#000000"
+)
 
 for (label_col in label_cols) {
   local_col <- paste0("local_bd_", label_col)

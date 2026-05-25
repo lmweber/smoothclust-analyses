@@ -191,7 +191,16 @@ dir.create(local_bd_plots_dir, recursive = TRUE, showWarnings = FALSE)
 
 sample_ids <- sort(unique(as.character(colData(spe)$sample_id)))
 label_cols <- as.character(levels(bd$label_col))
-cluster_palette <- unname(palette.colors(36, "Polychrome 36"))
+cluster_palette <- c(
+  "#0072B2",
+  "#E69F00",
+  "#009E73",
+  "#CC79A7",
+  "#56B4E9",
+  "#F0E442",
+  "#D55E00",
+  "#000000"
+)
 
 for (label_col in label_cols) {
   local_col <- paste0("local_bd_", label_col)

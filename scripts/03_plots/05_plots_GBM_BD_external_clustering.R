@@ -310,7 +310,16 @@ save_plot(
 # Representative maps for external methods
 ################################################################################
 
-cluster_palette <- unname(palette.colors(36, "Polychrome 36"))
+cluster_palette <- c(
+  "#0072B2",
+  "#E69F00",
+  "#009E73",
+  "#CC79A7",
+  "#56B4E9",
+  "#F0E442",
+  "#D55E00",
+  "#000000"
+)
 local_bd_palette <- c("gray92", "#e31a1c")
 spe_map <- spe_external[
   ,
