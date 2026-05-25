@@ -80,6 +80,7 @@ theme_set(theme_bw(base_size = 9))
 
 cluster_palette <- unname(palette.colors(36, "Polychrome 36"))
 domain_palette <- cluster_palette[seq_len(n_clusters)]
+local_bd_palette <- c("gray92", "#e31a1c")
 
 smooth_label_col <- paste0("smoothclust_k", n_clusters)
 baseline_label_col <- paste0("baseline_kmeans_k", n_clusters)
@@ -95,7 +96,7 @@ p_smooth_domains <- plotCoords(
   spe_smooth_sub,
   annotate = smooth_label_col,
   pal = domain_palette,
-  point_size = 1.0
+  point_size = 1.2
 ) +
   labs(
     title = "smoothclust domains",
@@ -111,8 +112,8 @@ p_smooth_domains <- plotCoords(
 p_local_bd <- plotCoords(
   spe_smooth_sub,
   annotate = local_bd_col,
-  pal = "magma",
-  point_size = 1.0
+  pal = local_bd_palette,
+  point_size = 1.2
 ) +
   labs(
     title = "Local boundary density",
@@ -131,7 +132,7 @@ p_baseline_domains <- plotCoords(
   spe_baseline_sub,
   annotate = baseline_label_col,
   pal = domain_palette,
-  point_size = 1.0
+  point_size = 1.2
 ) +
   labs(
     title = "Unsmoothed k-means",

@@ -185,7 +185,7 @@ map_palette <- setNames(
 )
 
 map_plot <- ggplot(map_df, aes(x = x, y = -y, color = label)) +
-  geom_point(size = 0.35) +
+  geom_point(size = 0.5) +
   coord_fixed() +
   facet_wrap(~ author_label_display, ncol = 3) +
   scale_color_manual(values = map_palette) +

@@ -311,6 +311,7 @@ save_plot(
 ################################################################################
 
 cluster_palette <- unname(palette.colors(36, "Polychrome 36"))
+local_bd_palette <- c("gray92", "#e31a1c")
 spe_map <- spe_external[
   ,
   as.character(colData(spe_external)$sample_id) == map_sample_id
@@ -355,7 +356,7 @@ for (method in external_methods) {
     spe_map,
     annotate = label_col,
     pal = label_palette,
-    point_size = 1.0
+    point_size = 1.2
   ) +
     labs(
       title = method_display,
@@ -376,8 +377,8 @@ for (method in external_methods) {
   external_local_plots[[method]] <- plotCoords(
     spe_map,
     annotate = local_col,
-    pal = "magma",
-    point_size = 1.0
+    pal = local_bd_palette,
+    point_size = 1.2
   ) +
     labs(
       title = paste(method_display, "local BD"),

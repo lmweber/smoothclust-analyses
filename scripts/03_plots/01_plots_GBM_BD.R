@@ -41,10 +41,15 @@ sample_palette <- setNames(
   levels(bd$sample_id)
 )
 
+local_bd_palette <- c("gray92", "#e31a1c")
+
 
 # boundary density by number of clusters
 
-ggplot(bd, aes(x = n_clusters, y = boundary_density, group = sample_id, color = sample_id)) +
+bd_nclusters_plot <- ggplot(
+  bd,
+  aes(x = n_clusters, y = boundary_density, group = sample_id, color = sample_id)
+) +
   geom_line(linewidth = 0.4, alpha = 0.8) +
   geom_point(size = 1.4) +
   scale_color_manual(values = sample_palette) +
@@ -53,6 +58,7 @@ ggplot(bd, aes(x = n_clusters, y = boundary_density, group = sample_id, color = 
 
 ggsave(
   file.path(summary_plots_dir, "GBM_BD_by_nclusters.png"),
+  bd_nclusters_plot,
   width = 8,
   height = 5,
   dpi = 300
@@ -61,7 +67,10 @@ ggsave(
 
 # mean discordant neighbors by number of clusters
 
-ggplot(bd, aes(x = n_clusters, y = mean_discordant, group = sample_id, color = sample_id)) +
+mean_discordant_plot <- ggplot(
+  bd,
+  aes(x = n_clusters, y = mean_discordant, group = sample_id, color = sample_id)
+) +
   geom_line(linewidth = 0.4, alpha = 0.8) +
   geom_point(size = 1.4) +
   scale_color_manual(values = sample_palette) +
@@ -70,6 +79,7 @@ ggplot(bd, aes(x = n_clusters, y = mean_discordant, group = sample_id, color = s
 
 ggsave(
   file.path(summary_plots_dir, "GBM_mean_discordant_by_nclusters.png"),
+  mean_discordant_plot,
   width = 8,
   height = 5,
   dpi = 300
@@ -78,7 +88,15 @@ ggsave(
 
 # relative boundary density by number of clusters
 
-ggplot(bd, aes(x = n_clusters, y = relative_boundary_density, group = sample_id, color = sample_id)) +
+relative_bd_nclusters_plot <- ggplot(
+  bd,
+  aes(
+    x = n_clusters,
+    y = relative_boundary_density,
+    group = sample_id,
+    color = sample_id
+  )
+) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "gray40") +
   geom_line(linewidth = 0.4, alpha = 0.8, na.rm = TRUE) +
   geom_point(size = 1.4, na.rm = TRUE) +
@@ -88,6 +106,7 @@ ggplot(bd, aes(x = n_clusters, y = relative_boundary_density, group = sample_id,
 
 ggsave(
   file.path(summary_plots_dir, "GBM_relative_BD_by_nclusters.png"),
+  relative_bd_nclusters_plot,
   width = 8,
   height = 5,
   dpi = 300
@@ -96,7 +115,10 @@ ggsave(
 
 # heatmap of raw boundary density
 
-ggplot(bd, aes(x = factor(n_clusters), y = sample_id, fill = boundary_density)) +
+bd_heatmap_plot <- ggplot(
+  bd,
+  aes(x = factor(n_clusters), y = sample_id, fill = boundary_density)
+) +
   geom_tile(color = "white", linewidth = 0.2) +
   scale_fill_viridis_c(option = "magma", name = "BD") +
   labs(x = "Number of clusters", y = "Sample") +
@@ -104,6 +126,7 @@ ggplot(bd, aes(x = factor(n_clusters), y = sample_id, fill = boundary_density)) 
 
 ggsave(
   file.path(summary_plots_dir, "GBM_BD_heatmap.png"),
+  bd_heatmap_plot,
   width = 6,
   height = 6,
   dpi = 300
@@ -112,7 +135,10 @@ ggsave(
 
 # heatmap of analytic relative boundary density
 
-ggplot(bd, aes(x = factor(n_clusters), y = sample_id, fill = relative_boundary_density)) +
+relative_bd_heatmap_plot <- ggplot(
+  bd,
+  aes(x = factor(n_clusters), y = sample_id, fill = relative_boundary_density)
+) +
   geom_tile(color = "white", linewidth = 0.2) +
   scale_fill_viridis_c(option = "viridis", name = "Relative BD", na.value = "gray85") +
   labs(x = "Number of clusters", y = "Sample") +
@@ -120,6 +146,7 @@ ggplot(bd, aes(x = factor(n_clusters), y = sample_id, fill = relative_boundary_d
 
 ggsave(
   file.path(summary_plots_dir, "GBM_relative_BD_heatmap.png"),
+  relative_bd_heatmap_plot,
   width = 6,
   height = 6,
   dpi = 300
@@ -128,7 +155,14 @@ ggsave(
 
 # raw boundary density vs analytic expected boundary density
 
-ggplot(bd, aes(x = expected_boundary_density, y = boundary_density, color = factor(n_clusters))) +
+expected_bd_plot <- ggplot(
+  bd,
+  aes(
+    x = expected_boundary_density,
+    y = boundary_density,
+    color = factor(n_clusters)
+  )
+) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray40") +
   geom_point(size = 2, alpha = 0.85) +
   scale_color_brewer(palette = "Dark2", name = "Clusters") +
@@ -138,6 +172,7 @@ ggplot(bd, aes(x = expected_boundary_density, y = boundary_density, color = fact
 
 ggsave(
   file.path(summary_plots_dir, "GBM_BD_vs_expected_BD.png"),
+  expected_bd_plot,
   width = 5.5,
   height = 5,
   dpi = 300
@@ -170,7 +205,7 @@ for (label_col in label_cols) {
       spe_sub,
       annotate = label_col,
       pal = pal,
-      point_size = 1.0
+      point_size = 1.2
     ) +
       ggtitle(paste(sample_id, label_col))
     
@@ -185,8 +220,8 @@ for (label_col in label_cols) {
     p <- plotCoords(
       spe_sub,
       annotate = local_col,
-      pal = "magma",
-      point_size = 1.0
+      pal = local_bd_palette,
+      point_size = 1.2
     ) +
       ggtitle(paste(sample_id, local_col))
     
