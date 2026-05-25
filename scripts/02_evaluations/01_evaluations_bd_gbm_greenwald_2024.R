@@ -30,6 +30,8 @@ n_pcs <- 50
 cluster_numbers <- 3:8
 seed <- 123
 
+dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
+
 
 # load data
 
@@ -54,6 +56,14 @@ if ("is_mito" %in% names(rowData(spe))) {
 table(gene_filter)
 
 spe <- spe[gene_filter, ]
+
+
+# remove spots with zero counts after gene filtering
+
+spot_counts_after_gene_filter <- Matrix::colSums(assay(spe, "counts"))
+spot_filter <- spot_counts_after_gene_filter > 0
+spe <- spe[, spot_filter]
+sample_ids <- sort(unique(as.character(colData(spe)$sample_id)))
 
 dim(spe)
 
