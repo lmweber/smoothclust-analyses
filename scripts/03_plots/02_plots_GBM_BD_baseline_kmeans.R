@@ -72,7 +72,13 @@ bd_wide$sample_id <- factor(bd_wide$sample_id, levels = sort(unique(bd_wide$samp
 
 # common plot settings
 
-theme_set(theme_bw(base_size = 11))
+theme_set(
+  theme_bw(base_size = 11) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+)
 
 method_palette <- c(
   "smoothclust + k-means" = "#1B9E77",

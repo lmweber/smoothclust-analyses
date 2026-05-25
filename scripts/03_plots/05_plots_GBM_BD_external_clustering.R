@@ -147,7 +147,13 @@ bd_k_requested <- bd[!is.na(bd$n_clusters_requested), ]
 
 # common plot settings
 
-theme_set(theme_bw(base_size = 11))
+theme_set(
+  theme_bw(base_size = 11) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+)
 
 method_palette <- c(
   "smoothclust" = "#1B9E77",
@@ -253,6 +259,19 @@ bd_k_map <- bd[
   bd$n_clusters_requested == map_n_clusters |
     bd$clustering_setting == "default",
 ]
+method_axis_labels <- vapply(
+  levels(bd$method_display),
+  function(method) {
+    method_settings <- unique(
+      as.character(bd_k_map$clustering_setting[bd_k_map$method_display == method])
+    )
+    method_settings <- method_settings[!is.na(method_settings)]
+    method_settings <- sub("^K=", "k = ", method_settings)
+    
+    paste0(method, "\n(", paste(method_settings, collapse = ", "), ")")
+  },
+  character(1)
+)
 
 bd_method_plot <- ggplot(
   bd_k_map,
@@ -261,13 +280,14 @@ bd_method_plot <- ggplot(
   geom_boxplot(outlier.shape = NA, width = 0.55, color = "gray35") +
   geom_jitter(width = 0.12, height = 0, size = 1.5, alpha = 0.75) +
   scale_color_manual(values = method_palette, drop = FALSE) +
+  scale_x_discrete(labels = method_axis_labels) +
   labs(
     x = NULL,
     y = "Raw boundary density"
   ) +
   theme(
     legend.position = "none",
-    axis.text.x = element_text(angle = 35, hjust = 1)
+    axis.text.x = element_text(angle = 35, hjust = 1, lineheight = 0.9)
   )
 
 save_plot(
@@ -359,7 +379,6 @@ for (method in external_methods) {
   
   n_labels <- length(unique(colData(spe_map)[[label_col]]))
   label_palette <- cluster_palette[seq_len(n_labels)]
-  label_count_name <- ifelse(method == "clustsignal", "labels found", "labels")
   
   external_map_plots[[method]] <- plotCoords(
     spe_map,
@@ -370,9 +389,8 @@ for (method in external_methods) {
     labs(
       title = method_display,
       subtitle = sprintf(
-        "%s; %s = %s; BD = %.3f",
+        "%s; labels = %s; BD = %.3f",
         selected_bd$clustering_setting,
-        label_count_name,
         selected_bd$n_labels,
         selected_bd$boundary_density
       ),
@@ -380,8 +398,8 @@ for (method in external_methods) {
     ) +
     theme(
       legend.position = "right",
-      plot.title = element_text(face = "bold", size = 10),
-      plot.subtitle = element_text(size = 7.5),
+      plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
+      plot.subtitle = element_text(size = 7.5, hjust = 0.5),
       legend.title = element_text(size = 8),
       legend.text = element_text(size = 7)
     )
@@ -399,8 +417,8 @@ for (method in external_methods) {
     ) +
     theme(
       legend.position = "right",
-      plot.title = element_text(face = "bold", size = 10),
-      plot.subtitle = element_text(size = 7.5),
+      plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
+      plot.subtitle = element_text(size = 7.5, hjust = 0.5),
       legend.title = element_text(size = 8),
       legend.text = element_text(size = 7)
     )

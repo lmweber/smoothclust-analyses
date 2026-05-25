@@ -34,7 +34,13 @@ bd$label_col <- factor(bd$label_col, levels = paste0("smoothclust_k", sort(uniqu
 
 # common plot settings
 
-theme_set(theme_bw(base_size = 11))
+theme_set(
+  theme_bw(base_size = 11) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+)
 
 sample_palette <- setNames(
   grDevices::hcl.colors(length(levels(bd$sample_id)), palette = "Dark 3"),

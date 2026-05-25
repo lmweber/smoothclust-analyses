@@ -121,7 +121,13 @@ author_bd$region_group <- factor(
 
 # plot settings
 
-theme_set(theme_bw(base_size = 11))
+theme_set(
+  theme_bw(base_size = 11) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+)
 
 tumor_palette <- setNames(
   grDevices::hcl.colors(length(levels(author_bd$tumor_group)), palette = "Dark 3"),
@@ -465,4 +471,3 @@ save_plot(
   width = 6.5,
   height = 8
 )
-

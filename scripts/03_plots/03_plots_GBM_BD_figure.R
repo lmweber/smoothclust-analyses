@@ -76,7 +76,13 @@ bd_wide$sample_id <- factor(bd_wide$sample_id, levels = rev(sample_order))
 
 # plot settings
 
-theme_set(theme_bw(base_size = 9))
+theme_set(
+  theme_bw(base_size = 9) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+)
 
 cluster_palette <- c(
   "#0072B2",
@@ -201,7 +207,7 @@ p_scatter <- ggplot(
     y = "Unsmoothed k-means BD"
   ) +
   theme(
-    plot.title = element_text(face = "bold", size = 10),
+    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
     legend.position = "right"
   )
 
@@ -225,7 +231,7 @@ p_difference <- ggplot(
     x = "Number of clusters",
     y = "Unsmoothed - smoothclust BD"
   ) +
-  theme(plot.title = element_text(face = "bold", size = 10))
+  theme(plot.title = element_text(face = "bold", size = 10, hjust = 0.5))
 
 p_heatmap <- ggplot(
   bd_smooth,
@@ -250,7 +256,7 @@ p_heatmap <- ggplot(
   ) +
   theme(
     panel.grid = element_blank(),
-    plot.title = element_text(face = "bold", size = 10),
+    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
     axis.text.y = element_text(size = 6.5),
     legend.position = "right"
   )
