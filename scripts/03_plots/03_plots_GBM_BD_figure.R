@@ -90,6 +90,10 @@ cluster_palette <- c(
 )
 domain_palette <- cluster_palette[seq_len(n_clusters)]
 local_bd_palette <- c("gray92", "#e31a1c")
+k_palette <- setNames(
+  c("#DEEBF7", "#C6DBEF", "#9ECAE1", "#6BAED6", "#3182BD", "#08519C"),
+  as.character(3:8)
+)
 
 smooth_label_col <- paste0("smoothclust_k", n_clusters)
 baseline_label_col <- paste0("baseline_kmeans_k", n_clusters)
@@ -110,12 +114,15 @@ p_smooth_domains <- plotCoords(
   labs(
     title = "smoothclust domains",
     subtitle = sprintf("%s, K = %s, BD = %.3f", 
-                       sample_id, n_clusters, selected_result$boundary_density_smoothclust)
+                       sample_id, n_clusters, selected_result$boundary_density_smoothclust),
+    color = "Cluster"
   ) +
   theme(
-    legend.position = "none",
+    legend.position = "right",
     plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-    plot.subtitle = element_text(size = 8, hjust = 0.5)
+    plot.subtitle = element_text(size = 8, hjust = 0.5),
+    legend.title = element_text(size = 8),
+    legend.text = element_text(size = 7)
   )
 
 p_local_bd <- plotCoords(
@@ -146,12 +153,15 @@ p_baseline_domains <- plotCoords(
   labs(
     title = "Unsmoothed k-means",
     subtitle = sprintf("%s, K = %s, BD = %.3f", 
-                       sample_id, n_clusters, selected_result$boundary_density_baseline)
+                       sample_id, n_clusters, selected_result$boundary_density_baseline),
+    color = "Cluster"
   ) +
   theme(
-    legend.position = "none",
+    legend.position = "right",
     plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-    plot.subtitle = element_text(size = 8, hjust = 0.5)
+    plot.subtitle = element_text(size = 8, hjust = 0.5),
+    legend.title = element_text(size = 8),
+    legend.text = element_text(size = 7)
   )
 
 
@@ -183,7 +193,7 @@ p_scatter <- ggplot(
     fill = "#D81B60",
     color = "black"
   ) +
-  scale_color_brewer(palette = "Dark2", name = "K") +
+  scale_color_manual(values = k_palette, name = "K") +
   coord_equal(xlim = c(0, max_bd), ylim = c(0, max_bd), expand = TRUE) +
   labs(
     title = "Sample-level BD comparison",

@@ -375,12 +375,15 @@ for (method in external_methods) {
         label_count_name,
         selected_bd$n_labels,
         selected_bd$boundary_density
-      )
+      ),
+      color = "Label"
     ) +
     theme(
-      legend.position = "none",
+      legend.position = "right",
       plot.title = element_text(face = "bold", size = 10),
-      plot.subtitle = element_text(size = 7.5)
+      plot.subtitle = element_text(size = 7.5),
+      legend.title = element_text(size = 8),
+      legend.text = element_text(size = 7)
     )
   
   external_local_plots[[method]] <- plotCoords(

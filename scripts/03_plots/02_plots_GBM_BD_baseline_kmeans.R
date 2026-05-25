@@ -281,6 +281,7 @@ for (label_col in label_cols) {
       pal = pal,
       point_size = 1.2
     ) +
+      labs(color = "Cluster") +
       ggtitle(paste(sample_id, label_col))
     
     ggsave(
