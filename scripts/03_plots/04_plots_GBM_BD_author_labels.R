@@ -12,8 +12,8 @@ dataset_id <- "GBM"
 map_sample_id <- "zh1019inf"
 
 repo_dir <- "."
-results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
-plots_dir <- file.path(repo_dir, "plots", dataset_id, "boundary_density")
+results_dir <- file.path(repo_dir, "results", dataset_id)
+plots_dir <- file.path(repo_dir, "plots", dataset_id)
 author_plots_dir <- file.path(plots_dir, "author_labels")
 supplement_dir <- file.path(author_plots_dir, "supplementary")
 

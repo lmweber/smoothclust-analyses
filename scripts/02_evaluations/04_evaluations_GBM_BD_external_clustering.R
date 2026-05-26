@@ -20,7 +20,7 @@ dataset_id <- "GBM"
 repo_dir <- "."
 data_dir <- file.path(repo_dir, "data", dataset_id)
 processed_dir <- file.path(data_dir, "processed")
-results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
+results_dir <- file.path(repo_dir, "results", dataset_id)
 
 input_file <- file.path(processed_dir, "spe_GBM.rds")
 spe_plot_file <- file.path(results_dir, "spe_GBM_external_clustering_BD_plot.rds")

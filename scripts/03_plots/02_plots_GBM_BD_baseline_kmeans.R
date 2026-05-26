@@ -12,8 +12,8 @@ library(SpatialExperiment)
 dataset_id <- "GBM"
 
 repo_dir <- "."
-results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
-plots_dir <- file.path(repo_dir, "plots", dataset_id, "boundary_density")
+results_dir <- file.path(repo_dir, "results", dataset_id)
+plots_dir <- file.path(repo_dir, "plots", dataset_id)
 comparison_plots_dir <- file.path(plots_dir, "baseline_kmeans_comparison")
 summary_plots_dir <- file.path(comparison_plots_dir, "summary_plots")
 cluster_plots_dir <- file.path(comparison_plots_dir, "baseline_cluster_maps")

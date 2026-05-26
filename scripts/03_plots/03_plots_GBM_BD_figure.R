@@ -16,8 +16,8 @@ n_clusters <- 6
 boundary_k <- 6
 
 repo_dir <- "."
-results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
-plots_dir <- file.path(repo_dir, "plots", dataset_id, "boundary_density")
+results_dir <- file.path(repo_dir, "results", dataset_id)
+plots_dir <- file.path(repo_dir, "plots", dataset_id)
 figure_dir <- file.path(plots_dir, "figure")
 paper_figures_dir <- file.path(repo_dir, "..", "smoothclust_paper", "figures")
 

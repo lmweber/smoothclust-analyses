@@ -16,8 +16,8 @@ map_n_clusters <- 5
 boundary_k <- 6
 
 repo_dir <- "."
-results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
-plots_dir <- file.path(repo_dir, "plots", dataset_id, "boundary_density")
+results_dir <- file.path(repo_dir, "results", dataset_id)
+plots_dir <- file.path(repo_dir, "plots", dataset_id)
 external_plots_dir <- file.path(plots_dir, "external_clustering")
 summary_plots_dir <- file.path(external_plots_dir, "summary_plots")
 cluster_plots_dir <- file.path(external_plots_dir, "cluster_maps")

@@ -12,7 +12,7 @@ dataset_id <- "GBM"
 
 repo_dir <- "."
 data_dir <- file.path(repo_dir, "data", dataset_id)
-results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
+results_dir <- file.path(repo_dir, "results", dataset_id)
 
 smoothclust_spe_plot_file <- file.path(results_dir, "spe_GBM_BD_plot.rds")
 author_metadata_file <- file.path(data_dir, "raw", "Inputs", "general", "visium_metadata.csv")

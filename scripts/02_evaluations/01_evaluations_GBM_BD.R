@@ -17,7 +17,7 @@ dataset_id <- "GBM"
 repo_dir <- "."
 data_dir <- file.path(repo_dir, "data", dataset_id)
 processed_dir <- file.path(data_dir, "processed")
-results_dir <- file.path(repo_dir, "results", dataset_id, "boundary_density")
+results_dir <- file.path(repo_dir, "results", dataset_id)
 
 input_file <- file.path(processed_dir, "spe_GBM.rds")
 
