@@ -38,7 +38,7 @@ parallel_threads <- 14
 # BayesSpace settings
 bayesspace_platform <- "Visium"
 bayesspace_n_pcs <- 15
-bayesspace_nrep <- 5000  # change to 50000 later
+bayesspace_nrep <- 50000
 bayesspace_burn_in <- 1000
 bayesspace_thin <- 100
 bayesspace_init_method <- "kmeans"
