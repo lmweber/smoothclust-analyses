@@ -224,8 +224,8 @@ save_plot(
       map_n_clusters
     )
   ),
-  width = 7.6,
-  height = 3.9
+  width = 8.4,
+  height = 4.5
 )
 
 
@@ -342,7 +342,10 @@ save_plot(
 # Combined supplementary figure
 ################################################################################
 
-smoothing_parameter_figure <- spatial_maps_plot / dose_response_plot / rank_stability_plot +
+smoothing_parameter_figure <- wrap_elements(spatial_maps_plot) /
+  dose_response_plot /
+  rank_stability_plot +
+  plot_layout(heights = c(1.35, 1, 1)) +
   plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(face = "bold", size = 12))
 
@@ -350,5 +353,5 @@ save_plot(
   smoothing_parameter_figure,
   file.path(figure_dir, "GBM_supp_sensitivity_smoothing_parameter"),
   width = 10.5,
-  height = 9.8
+  height = 10.5
 )
