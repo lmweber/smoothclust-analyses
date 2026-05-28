@@ -60,6 +60,24 @@ clustsignal_parameter_mode <- "default"
 dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
 
+# runtime helpers
+
+script_start_time <- Sys.time()
+
+elapsed_seconds <- function(start_time, end_time = Sys.time()) {
+  as.numeric(difftime(end_time, start_time, units = "secs"))
+}
+
+collapse_unique <- function(x) {
+  x <- unique(x[!is.na(x) & nzchar(x)])
+  if (length(x) == 0L) {
+    NA_character_
+  } else {
+    paste(x, collapse = ",")
+  }
+}
+
+
 # helper functions
 
 select_hvgs <- function(spe, prop) {
@@ -245,6 +263,9 @@ run_clustsignal <- function(spe_sub, sample_seed) {
 spe <- readRDS(input_file)
 
 sample_ids <- sort(unique(as.character(colData(spe)$sample_id)))
+input_n_samples <- length(sample_ids)
+input_n_spots <- ncol(spe)
+input_n_genes <- nrow(spe)
 
 
 # multi-sample gene filtering: keep genes passing per-sample gene count
@@ -272,6 +293,9 @@ spot_counts_after_gene_filter <- Matrix::colSums(assay(spe, assay_name))
 spot_filter <- spot_counts_after_gene_filter > 0
 spe <- spe[, spot_filter]
 sample_ids <- sort(unique(as.character(colData(spe)$sample_id)))
+filtered_n_samples <- length(sample_ids)
+filtered_n_spots <- ncol(spe)
+filtered_n_genes <- nrow(spe)
 
 dim(spe)
 
@@ -280,6 +304,8 @@ dim(spe)
 
 spe_list <- list()
 bd_summary <- data.frame()
+runtime_by_sample <- data.frame()
+analysis_start_time <- Sys.time()
 
 for (sample_i in seq_along(sample_ids)) {
   sample_id <- sample_ids[sample_i]
@@ -291,6 +317,7 @@ for (sample_i in seq_along(sample_ids)) {
   
   if ("bayesspace" %in% methods_to_run) {
     message("  Running BayesSpace")
+    method_start_time <- Sys.time()
     bayesspace_labels <- run_bayesspace(spe_sub, cluster_numbers, sample_seed)
     for (label_col in names(bayesspace_labels)) {
       n_clusters <- as.integer(sub("bayesspace_k", "", label_col))
@@ -306,10 +333,39 @@ for (sample_i in seq_along(sample_ids)) {
       spe_out <- res$spe
       bd_summary <- rbind(bd_summary, res$summary)
     }
+    runtime_by_sample <- rbind(
+      runtime_by_sample,
+      data.frame(
+        dataset_id = dataset_id,
+        analysis_name = "external_clustering_method_comparison",
+        sample_id = sample_id,
+        geo_sample_id = unique(as.character(colData(spe_sub)$geo_sample_id))[1],
+        method = "bayesspace",
+        method_display = "BayesSpace",
+        n_clusters_requested = paste(cluster_numbers, collapse = ","),
+        n_label_sets = length(bayesspace_labels),
+        n_labels_returned = paste(
+          vapply(
+            bayesspace_labels,
+            function(x) length(unique(x)),
+            integer(1)
+          ),
+          collapse = ","
+        ),
+        n_spots = ncol(spe_sub),
+        n_genes = nrow(spe_sub),
+        boundary_k = boundary_k,
+        elapsed_seconds = elapsed_seconds(method_start_time),
+        requested_threads = parallel_threads,
+        sample_seed = sample_seed,
+        stringsAsFactors = FALSE
+      )
+    )
   }
   
   if ("banksy" %in% methods_to_run) {
     message("  Running Banksy")
+    method_start_time <- Sys.time()
     banksy_labels <- run_banksy(spe_sub, cluster_numbers, sample_seed)
     for (label_col in names(banksy_labels)) {
       n_clusters <- as.integer(sub("banksy_k", "", label_col))
@@ -325,10 +381,39 @@ for (sample_i in seq_along(sample_ids)) {
       spe_out <- res$spe
       bd_summary <- rbind(bd_summary, res$summary)
     }
+    runtime_by_sample <- rbind(
+      runtime_by_sample,
+      data.frame(
+        dataset_id = dataset_id,
+        analysis_name = "external_clustering_method_comparison",
+        sample_id = sample_id,
+        geo_sample_id = unique(as.character(colData(spe_sub)$geo_sample_id))[1],
+        method = "banksy",
+        method_display = "Banksy",
+        n_clusters_requested = paste(cluster_numbers, collapse = ","),
+        n_label_sets = length(banksy_labels),
+        n_labels_returned = paste(
+          vapply(
+            banksy_labels,
+            function(x) length(unique(x)),
+            integer(1)
+          ),
+          collapse = ","
+        ),
+        n_spots = ncol(spe_sub),
+        n_genes = nrow(spe_sub),
+        boundary_k = boundary_k,
+        elapsed_seconds = elapsed_seconds(method_start_time),
+        requested_threads = parallel_threads,
+        sample_seed = sample_seed,
+        stringsAsFactors = FALSE
+      )
+    )
   }
   
   if ("clustsignal" %in% methods_to_run) {
     message("  Running clustSIGNAL")
+    method_start_time <- Sys.time()
     clustsignal_labels <- run_clustsignal(spe_sub, sample_seed)
     for (label_col in names(clustsignal_labels)) {
       n_clusters <- if (grepl("^clustsignal_k[0-9]+$", label_col)) {
@@ -348,12 +433,41 @@ for (sample_i in seq_along(sample_ids)) {
       spe_out <- res$spe
       bd_summary <- rbind(bd_summary, res$summary)
     }
+    runtime_by_sample <- rbind(
+      runtime_by_sample,
+      data.frame(
+        dataset_id = dataset_id,
+        analysis_name = "external_clustering_method_comparison",
+        sample_id = sample_id,
+        geo_sample_id = unique(as.character(colData(spe_sub)$geo_sample_id))[1],
+        method = "clustsignal",
+        method_display = "ClustSIGNAL",
+        n_clusters_requested = NA_character_,
+        n_label_sets = length(clustsignal_labels),
+        n_labels_returned = paste(
+          vapply(
+            clustsignal_labels,
+            function(x) length(unique(x)),
+            integer(1)
+          ),
+          collapse = ","
+        ),
+        n_spots = ncol(spe_sub),
+        n_genes = nrow(spe_sub),
+        boundary_k = boundary_k,
+        elapsed_seconds = elapsed_seconds(method_start_time),
+        requested_threads = clustsignal_threads,
+        sample_seed = sample_seed,
+        stringsAsFactors = FALSE
+      )
+    )
   }
   
   spe_list[[sample_id]] <- spe_out
 }
 
 spe_plot <- do.call(cbind, spe_list)
+analysis_end_time <- Sys.time()
 
 
 # save outputs
@@ -408,4 +522,70 @@ write.csv(
 saveRDS(
   spe_plot,
   file = spe_plot_file
+)
+
+
+# save runtime outputs
+
+script_end_time <- Sys.time()
+
+runtime_summary <- do.call(
+  rbind,
+  lapply(
+    split(runtime_by_sample, runtime_by_sample$method),
+    function(x) {
+      data.frame(
+        dataset_id = dataset_id,
+        analysis_name = "external_clustering_method_comparison",
+        input_file = input_file,
+        method = unique(x$method)[1],
+        method_display = unique(x$method_display)[1],
+        n_samples_input = input_n_samples,
+        n_spots_input = input_n_spots,
+        n_genes_input = input_n_genes,
+        n_samples_after_filter = filtered_n_samples,
+        n_spots_after_filter = filtered_n_spots,
+        n_genes_after_filter = filtered_n_genes,
+        n_samples_timed = nrow(x),
+        n_clusters_requested = collapse_unique(x$n_clusters_requested),
+        n_label_sets = sum(x$n_label_sets),
+        n_labels_returned = collapse_unique(x$n_labels_returned),
+        boundary_k = boundary_k,
+        total_elapsed_seconds = sum(x$elapsed_seconds),
+        median_sample_elapsed_seconds = median(x$elapsed_seconds),
+        min_sample_elapsed_seconds = min(x$elapsed_seconds),
+        max_sample_elapsed_seconds = max(x$elapsed_seconds),
+        requested_threads = collapse_unique(as.character(x$requested_threads)),
+        methods_to_run = paste(methods_to_run, collapse = ","),
+        analysis_start_time = as.character(analysis_start_time),
+        analysis_end_time = as.character(analysis_end_time),
+        analysis_elapsed_seconds = elapsed_seconds(
+          analysis_start_time,
+          analysis_end_time
+        ),
+        script_start_time = as.character(script_start_time),
+        script_end_time = as.character(script_end_time),
+        script_elapsed_seconds = elapsed_seconds(
+          script_start_time,
+          script_end_time
+        ),
+        bayesspace_version = as.character(packageVersion("BayesSpace")),
+        banksy_version = as.character(packageVersion("Banksy")),
+        clustsignal_version = as.character(packageVersion("clustSIGNAL")),
+        stringsAsFactors = FALSE
+      )
+    }
+  )
+)
+
+write.csv(
+  runtime_by_sample,
+  file = file.path(results_dir, "GBM_runtime_external_clustering_by_sample.csv"),
+  row.names = FALSE
+)
+
+write.csv(
+  runtime_summary,
+  file = file.path(results_dir, "GBM_runtime_external_clustering_summary.csv"),
+  row.names = FALSE
 )
