@@ -23,6 +23,7 @@ dir.create(summary_plots_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(figure_dir, recursive = TRUE, showWarnings = FALSE)
 
 bd_summary_file <- file.path(results_dir, "GBM_BD_permutation_summary.csv")
+analytic_summary_file <- file.path(results_dir, "GBM_BD_summary.csv")
 representative_null_file <- file.path(
   results_dir,
   paste0(
@@ -57,11 +58,42 @@ save_plot <- function(plot, filename, width, height) {
 # load data
 
 bd <- read.csv(bd_summary_file)
+analytic_bd <- read.csv(analytic_summary_file)
 representative_null <- read.csv(representative_null_file)
 
 bd$n_clusters <- as.integer(bd$n_clusters)
 bd$boundary_k <- as.integer(bd$boundary_k)
 bd$sample_id <- factor(bd$sample_id, levels = sort(unique(bd$sample_id)))
+
+analytic_bd$n_clusters <- as.integer(analytic_bd$n_clusters)
+analytic_bd$boundary_k <- as.integer(analytic_bd$boundary_k)
+
+analytic_bd <- analytic_bd[
+  analytic_bd$n_clusters %in% unique(bd$n_clusters),
+  c(
+    "sample_id",
+    "geo_sample_id",
+    "label_col",
+    "n_clusters",
+    "n_spots",
+    "boundary_k",
+    "expected_boundary_density",
+    "relative_boundary_density"
+  )
+]
+
+bd_analytic <- merge(
+  bd,
+  analytic_bd,
+  by = c(
+    "sample_id",
+    "geo_sample_id",
+    "label_col",
+    "n_clusters",
+    "n_spots",
+    "boundary_k"
+  )
+)
 
 representative_result <- bd[
   as.character(bd$sample_id) == representative_sample_id &
@@ -70,6 +102,15 @@ representative_result <- bd[
 
 if (nrow(representative_result) != 1L) {
   stop("Expected one representative result row")
+}
+
+representative_analytic_result <- bd_analytic[
+  bd_analytic$sample_id == representative_sample_id &
+    bd_analytic$n_clusters == representative_n_clusters,
+]
+
+if (nrow(representative_analytic_result) != 1L) {
+  stop("Expected one representative analytic comparison row")
 }
 
 
@@ -91,6 +132,12 @@ max_bd <- max(
   bd$boundary_density,
   bd$permutation_mean,
   representative_null$permutation_boundary_density,
+  na.rm = TRUE
+)
+
+max_expected_bd <- max(
+  bd_analytic$expected_boundary_density,
+  bd_analytic$permutation_mean,
   na.rm = TRUE
 )
 
@@ -234,17 +281,78 @@ save_plot(
 
 
 ################################################################################
+# Analytic expected BD versus permutation-expected BD
+################################################################################
+
+analytic_permutation_plot <- ggplot(
+  bd_analytic,
+  aes(x = expected_boundary_density, y = permutation_mean)
+) +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    linetype = "dashed",
+    color = reference_color
+  ) +
+  geom_point(
+    shape = 21,
+    size = 2.4,
+    stroke = 0.25,
+    fill = permutation_color,
+    color = "gray20",
+    alpha = 0.85
+  ) +
+  geom_point(
+    data = representative_analytic_result,
+    shape = 21,
+    size = 3.2,
+    stroke = 0.55,
+    fill = observed_color,
+    color = "black"
+  ) +
+  coord_equal(
+    xlim = c(0, max_expected_bd * 1.03),
+    ylim = c(0, max_expected_bd * 1.03)
+  ) +
+  labs(
+    title = "Analytic versus permutation expectation",
+    subtitle = sprintf(
+      "GBM/glioma sections, K = %s, %s permutations",
+      representative_n_clusters,
+      representative_result$n_permutations
+    ),
+    x = "Analytic expected BD",
+    y = "Permutation mean BD"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
+    legend.position = "none"
+  )
+
+save_plot(
+  analytic_permutation_plot,
+  file.path(
+    summary_plots_dir,
+    paste0("GBM_analytic_vs_permutation_expected_BD_k", representative_n_clusters)
+  ),
+  width = 4.7,
+  height = 4.0
+)
+
+
+################################################################################
 # Combined supplementary figure
 ################################################################################
 
-permutation_figure <- null_distribution_plot + observed_expected_plot +
-  plot_layout(ncol = 2, widths = c(1.05, 1)) +
+permutation_figure <- 
+  null_distribution_plot + observed_expected_plot + analytic_permutation_plot +
+  plot_layout(ncol = 3, widths = c(1.05, 1, 1)) +
   plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(face = "bold", size = 12))
 
 save_plot(
   permutation_figure,
   file.path(figure_dir, "GBM_supp_permutation_BD"),
-  width = 9.8,
+  width = 14.4,
   height = 4.2
 )
