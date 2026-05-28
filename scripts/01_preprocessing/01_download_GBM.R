@@ -3,7 +3,7 @@
 # Greenwald et al. (2024) GBM/glioma Visium dataset
 ################################################################################
 
-# run from root directory of smoothclust-analyses repo
+# run from repository root directory
 
 dataset_id <- "GBM"
 geo_accession <- "GSE237183"
