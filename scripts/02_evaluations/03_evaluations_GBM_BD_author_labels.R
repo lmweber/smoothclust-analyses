@@ -17,32 +17,40 @@ results_dir <- file.path(repo_dir, "results", dataset_id)
 smoothclust_spe_plot_file <- file.path(results_dir, "spe_GBM_BD_plot.rds")
 author_metadata_file <- file.path(data_dir, "raw", "Inputs", "general", "visium_metadata.csv")
 
-# author-derived label sets:
-# (i) BD metrics calculated on org1 labels
-# (ii) BD metrics calculated on org2 labels
-# (iii) BD metrics calculated on Leiden/metaprogram labels
+
+# Author-derived label sets from Greenwald et al. used for BD summaries.
+# org1 and org2 summarize organization zones, mp summarizes dominant
+# metaprogram labels, and layer summarizes the five-layer organization model.
+
 author_label_metadata <- data.frame(
-  author_label_col = c("org1", "org2", "mp"),
+  author_label_col = c("org1", "org2", "mp", "layer"),
   author_label_section = c(
     "org1_zonal_labels",
     "org2_zonal_labels",
-    "leiden_labels"
+    "leiden_labels",
+    "state_layer_labels"
   ),
   author_label_display = c(
     "org1 zones (3 classes)",
     "org2 zones (5 classes)",
-    "Leiden metaprogram labels"
+    "Leiden metaprogram labels",
+    "State layers (5 classes)"
   ),
+  author_label_short = c("org1", "org2", "mp", "layer"),
   author_label_description = c(
     "structured_disorganized_intermediate_zones",
     "structured_disorganized_malignancy_zones",
-    "leiden_metaprogram_label"
+    "leiden_metaprogram_label",
+    "five_layer_state_model"
   ),
   stringsAsFactors = FALSE
 )
 
 author_label_cols <- author_label_metadata$author_label_col
+biological_annotation_cols <- c("ivygap", "cna_bin")
+all_author_cols <- c(author_label_cols, biological_annotation_cols)
 boundary_k <- 6
+illustrative_sample_id <- "zh1019inf"
 
 dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -52,7 +60,7 @@ dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 spe <- readRDS(smoothclust_spe_plot_file)
 author_metadata <- read.csv(author_metadata_file, stringsAsFactors = FALSE)
 
-stopifnot(all(c("sample", "spot_id", author_label_cols) %in% names(author_metadata)))
+stopifnot(all(c("sample", "spot_id", all_author_cols) %in% names(author_metadata)))
 
 sample_ids <- sort(unique(as.character(colData(spe)$sample_id)))
 
@@ -89,9 +97,20 @@ spe_key <- paste(colData(spe)$author_sample_id, colData(spe)$barcode, sep = "___
 author_match <- match(spe_key, author_key)
 colData(spe)$author_metadata_match <- !is.na(author_match)
 
-for (author_label_col in author_label_cols) {
-  output_col <- paste0("author_", author_label_col)
-  colData(spe)[[output_col]] <- author_metadata[[author_label_col]][author_match]
+for (author_col in all_author_cols) {
+  output_col <- paste0("author_", author_col)
+  colData(spe)[[output_col]] <- author_metadata[[author_col]][author_match]
+}
+
+
+# helper functions
+
+label_proportion <- function(labels, values) {
+  ok <- !is.na(labels)
+  if (!any(ok)) {
+    return(NA_real_)
+  }
+  mean(labels[ok] %in% values)
 }
 
 
@@ -117,6 +136,7 @@ for (sample_id in sample_ids) {
         author_label_col = author_label_col,
         author_label_section = author_label_metadata$author_label_section[label_ix],
         author_label_display = author_label_metadata$author_label_display[label_ix],
+        author_label_short = author_label_metadata$author_label_short[label_ix],
         author_label_description = author_label_metadata$author_label_description[label_ix],
         n_spots = sum(sample_ix),
         n_author_metadata_spots = sum(author_metadata$sample == author_sample_id),
@@ -127,6 +147,61 @@ for (sample_id in sample_ids) {
       )
     )
   }
+}
+
+
+# summarize sample-level biological covariates from author labels
+
+sample_biology_summary <- data.frame()
+
+for (sample_id in sample_ids) {
+  sample_ix <- as.character(colData(spe)$sample_id) == sample_id
+  author_sample_id <- unique(as.character(colData(spe)$author_sample_id)[sample_ix])[1]
+  labeled_ix <- sample_ix & !is.na(colData(spe)$author_org1)
+  
+  if (!any(labeled_ix)) {
+    next
+  }
+  
+  org1 <- colData(spe)$author_org1[labeled_ix]
+  org2 <- colData(spe)$author_org2[labeled_ix]
+  mp <- colData(spe)$author_mp[labeled_ix]
+  layer <- colData(spe)$author_layer[labeled_ix]
+  ivygap <- colData(spe)$author_ivygap[labeled_ix]
+  cna_bin <- colData(spe)$author_cna_bin[labeled_ix]
+  fraction_structured <- label_proportion(org1, "struct")
+  organization_group <- ifelse(
+    is.na(fraction_structured),
+    NA_character_,
+    ifelse(fraction_structured >= 0.5, "Structured-high", "Structured-low")
+  )
+  
+  sample_biology_summary <- rbind(
+    sample_biology_summary,
+    data.frame(
+      sample_id = sample_id,
+      geo_sample_id = unique(as.character(colData(spe)$geo_sample_id)[sample_ix])[1],
+      author_sample_id = author_sample_id,
+      organization_group = organization_group,
+      n_spots = sum(sample_ix),
+      n_labeled_spots = sum(labeled_ix),
+      fraction_structured = fraction_structured,
+      fraction_disorganized = label_proportion(org1, "dis"),
+      fraction_intermediate = label_proportion(org1, "Intermediate"),
+      fraction_structured_malignant = label_proportion(org2, "st_mal"),
+      fraction_structured_normal = label_proportion(org2, "st_norm"),
+      fraction_disorganized_malignant = label_proportion(org2, "dis_mal"),
+      fraction_disorganized_normal = label_proportion(org2, "dis_norm"),
+      fraction_mes_hyp = label_proportion(mp, "MES.Hyp"),
+      fraction_layer_1 = label_proportion(layer, "L1"),
+      fraction_layer_2 = label_proportion(layer, "L2"),
+      fraction_layer_1_2 = label_proportion(layer, c("L1", "L2")),
+      fraction_ivygap_pan = label_proportion(ivygap, "PAN"),
+      fraction_ivygap_mvp = label_proportion(ivygap, "MVP"),
+      fraction_malignant_or_mix_high = label_proportion(cna_bin, c("malignant", "mix_high")),
+      stringsAsFactors = FALSE
+    )
+  )
 }
 
 
@@ -178,8 +253,10 @@ for (sample_id in sample_ids) {
         author_label_col = author_label_col,
         author_label_section = author_label_metadata$author_label_section[label_ix],
         author_label_display = author_label_metadata$author_label_display[label_ix],
+        author_label_short = author_label_metadata$author_label_short[label_ix],
         author_label_description = author_label_metadata$author_label_description[label_ix],
         label_col = author_col,
+        local_boundary_density_col = local_col,
         n_labels = length(unique(author_labels)),
         n_spots = n_spots,
         n_labeled_spots = ncol(spe_sub),
@@ -205,7 +282,9 @@ parameters <- data.frame(
   author_label_cols = paste(author_label_cols, collapse = ","),
   author_label_sections = paste(author_label_metadata$author_label_section, collapse = ","),
   author_label_displays = paste(author_label_metadata$author_label_display, collapse = ","),
+  biological_annotation_cols = paste(biological_annotation_cols, collapse = ","),
   comparison_scope = "author_labeled_spots",
+  illustrative_sample_id = illustrative_sample_id,
   boundary_k = boundary_k,
   stringsAsFactors = FALSE
 )
@@ -219,6 +298,12 @@ write.csv(
 write.csv(
   author_bd_summary,
   file = file.path(results_dir, "GBM_BD_author_labels_summary.csv"),
+  row.names = FALSE
+)
+
+write.csv(
+  sample_biology_summary,
+  file = file.path(results_dir, "GBM_BD_author_labels_sample_biology.csv"),
   row.names = FALSE
 )
 
