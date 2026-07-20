@@ -23,6 +23,13 @@ input_file <- file.path(processed_dir, "spe_GBM.rds")
 
 baseline_method <- "baseline_unsmoothed_kmeans"
 assay_name <- "counts"
+normalized_assay_name <- "logcounts"
+size_factor_col <- "nonmito_umi"
+size_factor_reference <-
+  "all_nonmitochondrial_raw_genes_before_low_expression_filtering"
+size_factor_centering <- "per_sample_arithmetic_mean_one"
+normalization_method <- "library_size"
+normalization_pseudo_count <- 1
 clustering_method <- "kmeans"
 boundary_k <- 6
 min_gene_total_counts <- 100
@@ -39,6 +46,22 @@ dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
 spe <- readRDS(input_file)
 
+if (!size_factor_col %in% names(colData(spe))) {
+  stop("Missing required column in colData(spe): ", size_factor_col)
+}
+nonmito_umi <- colData(spe)[[size_factor_col]]
+if (!is.numeric(nonmito_umi) || length(nonmito_umi) != ncol(spe) ||
+    any(!is.finite(nonmito_umi)) || any(nonmito_umi <= 0)) {
+  stop("colData(spe)$", size_factor_col,
+       " must contain one positive finite numeric value per spot.")
+}
+if (!"is_mito" %in% names(rowData(spe)) ||
+    !is.logical(rowData(spe)$is_mito) ||
+    length(rowData(spe)$is_mito) != nrow(spe) ||
+    anyNA(rowData(spe)$is_mito)) {
+  stop("rowData(spe)$is_mito must contain one non-missing logical value per gene.")
+}
+
 sample_ids <- sort(unique(as.character(colData(spe)$sample_id)))
 
 
@@ -52,9 +75,7 @@ gene_filter_by_sample <- sapply(sample_ids, function(sample_id) {
 gene_filter <- rowSums(gene_filter_by_sample) > 0
 table(gene_filter)
 
-if ("is_mito" %in% names(rowData(spe))) {
-  gene_filter <- gene_filter & !rowData(spe)$is_mito
-}
+gene_filter <- gene_filter & !rowData(spe)$is_mito
 table(gene_filter)
 
 spe <- spe[gene_filter, ]
@@ -79,17 +100,28 @@ bd_summary <- data.frame()
 for (sample_id in sample_ids) {
   message("Processing sample: ", sample_id)
   spe_sub <- spe[, as.character(colData(spe)$sample_id) == sample_id]
+  size_factors <- as.numeric(colData(spe_sub)[[size_factor_col]])
+  size_factors <- size_factors / mean(size_factors)
+  names(size_factors) <- colnames(spe_sub)
   
-  spe_sub <- logNormCounts(spe_sub, assay.type = assay_name)
+  spe_sub <- logNormCounts(
+    spe_sub,
+    size.factors = size_factors,
+    center.size.factors = FALSE,
+    pseudo.count = normalization_pseudo_count,
+    assay.type = assay_name,
+    name = normalized_assay_name
+  )
   
-  dec <- modelGeneVar(spe_sub)
+  dec <- modelGeneVar(spe_sub, assay.type = normalized_assay_name)
   top_hvgs <- getTopHVGs(dec, prop = hvg_prop)
   
   set.seed(seed)
   spe_sub <- runPCA(
     spe_sub,
     subset_row = top_hvgs,
-    ncomponents = n_pcs
+    ncomponents = n_pcs,
+    exprs_values = normalized_assay_name
   )
   
   pca <- reducedDim(spe_sub, "PCA")
@@ -123,7 +155,7 @@ for (sample_id in sample_ids) {
         n_clusters = n_clusters,
         n_spots = ncol(spe_sub),
         boundary_k = boundary_k,
-        assay_name = assay_name,
+        assay_name = normalized_assay_name,
         smoothing_method = NA_character_,
         smoothing_bandwidth = NA_real_,
         clustering_method = clustering_method,
@@ -151,6 +183,12 @@ parameters <- data.frame(
   baseline_method = baseline_method,
   clustering_scope = "per_sample",
   assay_name = assay_name,
+  normalized_assay_name = normalized_assay_name,
+  normalization_method = normalization_method,
+  normalization_pseudo_count = normalization_pseudo_count,
+  size_factor_col = size_factor_col,
+  size_factor_reference = size_factor_reference,
+  size_factor_centering = size_factor_centering,
   clustering_method = clustering_method,
   boundary_k = boundary_k,
   min_gene_total_counts = min_gene_total_counts,

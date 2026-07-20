@@ -10,7 +10,6 @@ library(Matrix)
 library(SpatialExperiment)
 library(scater)
 library(scran)
-library(scuttle)
 
 dataset_id <- "GBM"
 
@@ -26,6 +25,14 @@ spe_plot_file <- file.path(
 )
 
 assay_name <- "counts"
+smooth_assay_name <- "logcounts_smooth"
+size_factor_col <- "nonmito_umi"
+size_factor_reference <-
+  "all_nonmitochondrial_raw_genes_before_low_expression_filtering"
+size_factor_centering <- "per_sample_arithmetic_mean_one"
+smoothclust_normalize <- TRUE
+smoothclust_log <- TRUE
+smoothclust_pseudo_count <- 1
 uniform_bandwidths <- c(0.010, 0.025, 0.050, 0.075, 0.100, 0.150)
 kernel_bandwidths <- c(0.010, 0.025, 0.050, 0.075, 0.100, 0.150)
 knn_smoothing_k <- c(2L, 6L, 12L, 18L, 30L, 42L)
@@ -108,14 +115,19 @@ make_smoothing_grid <- function() {
   smoothing_grid
 }
 
-smooth_by_setting <- function(spe_sub, setting) {
+smooth_by_setting <- function(spe_sub, setting, size_factors) {
   if (setting$smoothing_method %in% c("uniform", "kernel")) {
     smoothclust(
       spe_sub,
       assay_name = assay_name,
       method = setting$smoothing_method,
       bandwidth = setting$smoothing_bandwidth,
-      n_threads = parallel_threads
+      n_threads = parallel_threads,
+      normalize = smoothclust_normalize,
+      log = smoothclust_log,
+      size_factors = size_factors,
+      pseudo_count = smoothclust_pseudo_count,
+      output_assay_name = smooth_assay_name
     )
   } else if (setting$smoothing_method == "knn") {
     smoothclust(
@@ -123,7 +135,12 @@ smooth_by_setting <- function(spe_sub, setting) {
       assay_name = assay_name,
       method = setting$smoothing_method,
       k = setting$smoothing_k,
-      n_threads = parallel_threads
+      n_threads = parallel_threads,
+      normalize = smoothclust_normalize,
+      log = smoothclust_log,
+      size_factors = size_factors,
+      pseudo_count = smoothclust_pseudo_count,
+      output_assay_name = smooth_assay_name
     )
   } else {
     stop("Unknown smoothing method: ", setting$smoothing_method)
@@ -191,6 +208,22 @@ calculate_rank_stability <- function(bd_summary) {
 
 spe <- readRDS(input_file)
 
+if (!size_factor_col %in% names(colData(spe))) {
+  stop("Missing required column in colData(spe): ", size_factor_col)
+}
+nonmito_umi <- colData(spe)[[size_factor_col]]
+if (!is.numeric(nonmito_umi) || length(nonmito_umi) != ncol(spe) ||
+    any(!is.finite(nonmito_umi)) || any(nonmito_umi <= 0)) {
+  stop("colData(spe)$", size_factor_col,
+       " must contain one positive finite numeric value per spot.")
+}
+if (!"is_mito" %in% names(rowData(spe)) ||
+    !is.logical(rowData(spe)$is_mito) ||
+    length(rowData(spe)$is_mito) != nrow(spe) ||
+    anyNA(rowData(spe)$is_mito)) {
+  stop("rowData(spe)$is_mito must contain one non-missing logical value per gene.")
+}
+
 sample_ids <- sort(unique(as.character(colData(spe)$sample_id)))
 
 
@@ -205,9 +238,7 @@ gene_filter_by_sample <- sapply(sample_ids, function(sample_id) {
 gene_filter <- rowSums(gene_filter_by_sample) > 0
 table(gene_filter)
 
-if ("is_mito" %in% names(rowData(spe))) {
-  gene_filter <- gene_filter & !rowData(spe)$is_mito
-}
+gene_filter <- gene_filter & !rowData(spe)$is_mito
 table(gene_filter)
 
 spe <- spe[gene_filter, ]
@@ -235,6 +266,9 @@ for (sample_i in seq_along(sample_ids)) {
   
   sample_seed <- seed + sample_i * 1000L
   spe_sub <- spe[, as.character(colData(spe)$sample_id) == sample_id]
+  size_factors <- as.numeric(colData(spe_sub)[[size_factor_col]])
+  size_factors <- size_factors / mean(size_factors)
+  names(size_factors) <- colnames(spe_sub)
   spe_out <- spe_sub[0, ]
   geo_sample_id <- unique(as.character(colData(spe_sub)$geo_sample_id))[1]
   
@@ -242,12 +276,13 @@ for (sample_i in seq_along(sample_ids)) {
     setting <- smoothing_grid[setting_i, ]
     message("  Smoothing setting: ", setting$smoothing_setting_id)
     
-    spe_setting <- smooth_by_setting(spe_sub, setting)
+    spe_setting <- smooth_by_setting(
+      spe_sub,
+      setting,
+      size_factors
+    )
     
-    smooth_assay_name <- paste0(assay_name, "_smooth")
-    spe_setting <- logNormCounts(spe_setting, assay.type = smooth_assay_name)
-    
-    dec <- modelGeneVar(spe_setting)
+    dec <- modelGeneVar(spe_setting, assay.type = smooth_assay_name)
     top_hvgs <- getTopHVGs(dec, prop = hvg_prop)
     n_pcs_use <- min(n_pcs, length(top_hvgs), ncol(spe_setting) - 1L)
     
@@ -255,7 +290,8 @@ for (sample_i in seq_along(sample_ids)) {
     spe_setting <- runPCA(
       spe_setting,
       subset_row = top_hvgs,
-      ncomponents = n_pcs_use
+      ncomponents = n_pcs_use,
+      exprs_values = smooth_assay_name
     )
     
     pca <- reducedDim(spe_setting, "PCA")
@@ -295,7 +331,7 @@ for (sample_i in seq_along(sample_ids)) {
           n_labels = length(unique(labels)),
           n_spots = ncol(spe_setting),
           boundary_k = boundary_k,
-          assay_name = assay_name,
+          assay_name = smooth_assay_name,
           smoothing_method = setting$smoothing_method,
           smoothing_setting_id = setting$smoothing_setting_id,
           smoothing_parameter_type = setting$smoothing_parameter_type,
@@ -333,6 +369,13 @@ parameters <- data.frame(
   input_file = input_file,
   clustering_scope = "per_sample",
   assay_name = assay_name,
+  smooth_assay_name = smooth_assay_name,
+  size_factor_col = size_factor_col,
+  size_factor_reference = size_factor_reference,
+  size_factor_centering = size_factor_centering,
+  smoothclust_normalize = smoothclust_normalize,
+  smoothclust_log = smoothclust_log,
+  smoothclust_pseudo_count = smoothclust_pseudo_count,
   uniform_bandwidths = paste(uniform_bandwidths, collapse = ","),
   kernel_bandwidths = paste(kernel_bandwidths, collapse = ","),
   knn_smoothing_k = paste(knn_smoothing_k, collapse = ","),

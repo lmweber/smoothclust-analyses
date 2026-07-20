@@ -27,6 +27,13 @@ spe_plot_file <- file.path(results_dir, "spe_GBM_external_clustering_BD_plot.rds
 
 methods_to_run <- c("bayesspace", "banksy", "clustsignal")
 assay_name <- "counts"
+normalized_assay_name <- "logcounts"
+size_factor_col <- "nonmito_umi"
+size_factor_reference <-
+  "all_nonmitochondrial_raw_genes_before_low_expression_filtering"
+size_factor_centering <- "per_sample_arithmetic_mean_one"
+normalization_method <- "library_size"
+normalization_pseudo_count <- 1
 boundary_k <- 6
 min_gene_total_counts <- 100
 hvg_prop <- 0.1
@@ -46,7 +53,7 @@ bayesspace_model <- "t"
 bayesspace_precision <- "equal"
 
 # Banksy settings
-banksy_assay_name <- "logcounts"
+banksy_assay_name <- normalized_assay_name
 banksy_m <- 0
 banksy_lambda <- 0.8
 banksy_k_geom <- 15
@@ -80,8 +87,8 @@ collapse_unique <- function(x) {
 
 # helper functions
 
-select_hvgs <- function(spe, prop) {
-  dec <- modelGeneVar(spe)
+select_hvgs <- function(spe, prop, assay_type = normalized_assay_name) {
+  dec <- modelGeneVar(spe, assay.type = assay_type)
   getTopHVGs(dec, prop = prop)
 }
 
@@ -96,6 +103,17 @@ parallel_bpparam <- function(n_threads) {
 safe_n_pcs <- function(spe, requested_n_pcs) {
   max_pcs <- min(nrow(spe), ncol(spe)) - 1
   max(1L, min(requested_n_pcs, max_pcs))
+}
+
+center_size_factors <- function(spe) {
+  size_factors <- as.numeric(colData(spe)[[size_factor_col]])
+  if (length(size_factors) != ncol(spe) || any(!is.finite(size_factors)) ||
+      any(size_factors <= 0)) {
+    stop("Invalid size factors in colData(spe)$", size_factor_col, ".")
+  }
+  size_factors <- size_factors / mean(size_factors)
+  names(size_factors) <- colnames(spe)
+  size_factors
 }
 
 store_boundary_density <- function(
@@ -149,11 +167,16 @@ store_boundary_density <- function(
   list(spe = spe_out, summary = summary)
 }
 
-run_bayesspace <- function(spe_sub, cluster_numbers, sample_seed) {
+run_bayesspace <- function(
+    spe_sub,
+    cluster_numbers,
+    sample_seed,
+    size_factors) {
   n_hvgs <- max(1L, min(nrow(spe_sub), ceiling(hvg_prop * nrow(spe_sub))))
   n_pcs_use <- safe_n_pcs(spe_sub, bayesspace_n_pcs)
   
   spe_bs <- spe_sub
+  SingleCellExperiment::sizeFactors(spe_bs) <- size_factors
   colData(spe_bs)$row <- colData(spe_bs)$array_row
   colData(spe_bs)$col <- colData(spe_bs)$array_col
   
@@ -163,6 +186,7 @@ run_bayesspace <- function(spe_sub, cluster_numbers, sample_seed) {
     n.PCs = n_pcs_use,
     n.HVGs = n_hvgs,
     log.normalize = TRUE,
+    assay.type = normalized_assay_name,
     BPPARAM = parallel_bpparam(parallel_threads)
   )
   
@@ -189,9 +213,24 @@ run_bayesspace <- function(spe_sub, cluster_numbers, sample_seed) {
   labels
 }
 
-run_banksy <- function(spe_sub, cluster_numbers, sample_seed) {
-  spe_banksy <- logNormCounts(spe_sub, assay.type = assay_name)
-  top_hvgs <- select_hvgs(spe_banksy, hvg_prop)
+run_banksy <- function(
+    spe_sub,
+    cluster_numbers,
+    sample_seed,
+    size_factors) {
+  spe_banksy <- logNormCounts(
+    spe_sub,
+    size.factors = size_factors,
+    center.size.factors = FALSE,
+    pseudo.count = normalization_pseudo_count,
+    assay.type = assay_name,
+    name = normalized_assay_name
+  )
+  top_hvgs <- select_hvgs(
+    spe_banksy,
+    hvg_prop,
+    assay_type = normalized_assay_name
+  )
   spe_banksy <- spe_banksy[top_hvgs, ]
   n_pcs_use <- safe_n_pcs(spe_banksy, n_pcs)
   
@@ -241,9 +280,20 @@ run_banksy <- function(spe_sub, cluster_numbers, sample_seed) {
   labels
 }
 
-run_clustsignal <- function(spe_sub, sample_seed) {
-  spe_cs <- logNormCounts(spe_sub, assay.type = assay_name)
-  top_hvgs <- select_hvgs(spe_cs, hvg_prop)
+run_clustsignal <- function(spe_sub, sample_seed, size_factors) {
+  spe_cs <- logNormCounts(
+    spe_sub,
+    size.factors = size_factors,
+    center.size.factors = FALSE,
+    pseudo.count = normalization_pseudo_count,
+    assay.type = assay_name,
+    name = normalized_assay_name
+  )
+  top_hvgs <- select_hvgs(
+    spe_cs,
+    hvg_prop,
+    assay_type = normalized_assay_name
+  )
   spe_cs <- spe_cs[top_hvgs, ]
   
   set.seed(sample_seed)
@@ -262,6 +312,22 @@ run_clustsignal <- function(spe_sub, sample_seed) {
 
 spe <- readRDS(input_file)
 
+if (!size_factor_col %in% names(colData(spe))) {
+  stop("Missing required column in colData(spe): ", size_factor_col)
+}
+nonmito_umi <- colData(spe)[[size_factor_col]]
+if (!is.numeric(nonmito_umi) || length(nonmito_umi) != ncol(spe) ||
+    any(!is.finite(nonmito_umi)) || any(nonmito_umi <= 0)) {
+  stop("colData(spe)$", size_factor_col,
+       " must contain one positive finite numeric value per spot.")
+}
+if (!"is_mito" %in% names(rowData(spe)) ||
+    !is.logical(rowData(spe)$is_mito) ||
+    length(rowData(spe)$is_mito) != nrow(spe) ||
+    anyNA(rowData(spe)$is_mito)) {
+  stop("rowData(spe)$is_mito must contain one non-missing logical value per gene.")
+}
+
 sample_ids <- sort(unique(as.character(colData(spe)$sample_id)))
 input_n_samples <- length(sample_ids)
 input_n_spots <- ncol(spe)
@@ -279,9 +345,7 @@ gene_filter_by_sample <- sapply(sample_ids, function(sample_id) {
 gene_filter <- rowSums(gene_filter_by_sample) > 0
 table(gene_filter)
 
-if ("is_mito" %in% names(rowData(spe))) {
-  gene_filter <- gene_filter & !rowData(spe)$is_mito
-}
+gene_filter <- gene_filter & !rowData(spe)$is_mito
 table(gene_filter)
 
 spe <- spe[gene_filter, ]
@@ -313,12 +377,18 @@ for (sample_i in seq_along(sample_ids)) {
   
   sample_seed <- seed + sample_i * 1000L
   spe_sub <- spe[, as.character(colData(spe)$sample_id) == sample_id]
+  size_factors <- center_size_factors(spe_sub)
   spe_out <- spe_sub[0, ]
   
   if ("bayesspace" %in% methods_to_run) {
     message("  Running BayesSpace")
     method_start_time <- Sys.time()
-    bayesspace_labels <- run_bayesspace(spe_sub, cluster_numbers, sample_seed)
+    bayesspace_labels <- run_bayesspace(
+      spe_sub,
+      cluster_numbers,
+      sample_seed,
+      size_factors
+    )
     for (label_col in names(bayesspace_labels)) {
       n_clusters <- as.integer(sub("bayesspace_k", "", label_col))
       res <- store_boundary_density(
@@ -366,7 +436,12 @@ for (sample_i in seq_along(sample_ids)) {
   if ("banksy" %in% methods_to_run) {
     message("  Running Banksy")
     method_start_time <- Sys.time()
-    banksy_labels <- run_banksy(spe_sub, cluster_numbers, sample_seed)
+    banksy_labels <- run_banksy(
+      spe_sub,
+      cluster_numbers,
+      sample_seed,
+      size_factors
+    )
     for (label_col in names(banksy_labels)) {
       n_clusters <- as.integer(sub("banksy_k", "", label_col))
       res <- store_boundary_density(
@@ -414,7 +489,11 @@ for (sample_i in seq_along(sample_ids)) {
   if ("clustsignal" %in% methods_to_run) {
     message("  Running clustSIGNAL")
     method_start_time <- Sys.time()
-    clustsignal_labels <- run_clustsignal(spe_sub, sample_seed)
+    clustsignal_labels <- run_clustsignal(
+      spe_sub,
+      sample_seed,
+      size_factors
+    )
     for (label_col in names(clustsignal_labels)) {
       n_clusters <- if (grepl("^clustsignal_k[0-9]+$", label_col)) {
         as.integer(sub("clustsignal_k", "", label_col))
@@ -478,6 +557,12 @@ parameters <- data.frame(
   methods_to_run = paste(methods_to_run, collapse = ","),
   clustering_scope = "per_sample",
   assay_name = assay_name,
+  normalized_assay_name = normalized_assay_name,
+  normalization_method = normalization_method,
+  normalization_pseudo_count = normalization_pseudo_count,
+  size_factor_col = size_factor_col,
+  size_factor_reference = size_factor_reference,
+  size_factor_centering = size_factor_centering,
   boundary_k = boundary_k,
   min_gene_total_counts = min_gene_total_counts,
   hvg_prop = hvg_prop,

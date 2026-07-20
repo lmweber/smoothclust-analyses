@@ -110,14 +110,53 @@ spe <- BiocIO::import(vis)
 # filter spots and genes
 
 spe <- spe[, as.integer(colData(spe)$in_tissue) == 1]
+
+# Calculate non-mitochondrial library totals from all raw genes, before any
+# expression-based gene filtering. Spots with no usable non-mitochondrial counts
+# cannot have positive size factors and are removed as an invariant QC step.
+counts <- assay(spe, "counts")
+gene_symbols <- as.character(rowData(spe)$Symbol)
+is_mito <- !is.na(gene_symbols) &
+  grepl("^MT-", gene_symbols, ignore.case = TRUE)
+count_values <- if (inherits(counts, "sparseMatrix")) {
+  counts@x
+} else {
+  as.vector(counts)
+}
+
+if (any(!is.finite(count_values)) || any(count_values < 0)) {
+  stop("The raw count assay must contain finite, non-negative values.")
+}
+if (!any(!is_mito)) {
+  stop("No non-mitochondrial genes were identified.")
+}
+
+nonmito_umi <- Matrix::colSums(counts[!is_mito, , drop = FALSE])
+spot_filter <- is.finite(nonmito_umi) & nonmito_umi > 0
+
+if (any(!spot_filter)) {
+  message(
+    "Removing ", sum(!spot_filter),
+    " spot(s) with non-positive or non-finite non-mitochondrial library totals."
+  )
+}
+if (!any(spot_filter)) {
+  stop("No spots have positive, finite non-mitochondrial library totals.")
+}
+
+spe <- spe[, spot_filter]
+
+# Remove genes with zero counts across the retained spots. This does not affect
+# the non-mitochondrial library totals used for downstream normalization.
 spe <- spe[Matrix::rowSums(assay(spe, "counts")) > 0, ]
 
 
-# add QC metrics
+# add QC metrics on the retained object
 
 counts <- assay(spe, "counts")
-gene_symbols <- rowData(spe)$Symbol
-is_mito <- grepl("^MT-", gene_symbols, ignore.case = TRUE)
+gene_symbols <- as.character(rowData(spe)$Symbol)
+is_mito <- !is.na(gene_symbols) &
+  grepl("^MT-", gene_symbols, ignore.case = TRUE)
 
 metadata_match <- match(as.character(colData(spe)$sample_id), sample_metadata$sample_id)
 colData(spe)$barcode <- colnames(spe)
@@ -135,7 +174,15 @@ rowData(spe)$detected_spots <- Matrix::rowSums(counts > 0)
 colData(spe)$sum_umi <- Matrix::colSums(counts)
 colData(spe)$detected_genes <- Matrix::colSums(counts > 0)
 colData(spe)$mito_umi <- Matrix::colSums(counts[is_mito, , drop = FALSE])
+colData(spe)$nonmito_umi <- Matrix::colSums(counts[!is_mito, , drop = FALSE])
 colData(spe)$pct_mito <- 100 * colData(spe)$mito_umi / colData(spe)$sum_umi
+
+stopifnot(
+  all(is.finite(colData(spe)$nonmito_umi)),
+  all(colData(spe)$nonmito_umi > 0),
+  all(colData(spe)$sum_umi ==
+        colData(spe)$mito_umi + colData(spe)$nonmito_umi)
+)
 
 
 # save outputs

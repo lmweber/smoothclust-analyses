@@ -36,7 +36,6 @@ bd_baseline <- read.csv(baseline_summary_file)
 
 bd_smooth$method <- "smoothclust_kmeans"
 bd_smooth$clustering_method <- "kmeans"
-bd_smooth$assay_name <- "counts_smooth"
 
 common_cols <- intersect(names(bd_smooth), names(bd_baseline))
 bd <- rbind(
