@@ -18,7 +18,8 @@ boundary_k <- 6
 repo_dir <- "."
 results_dir <- file.path(repo_dir, "results", dataset_id)
 plots_dir <- file.path(repo_dir, "plots", dataset_id)
-figure_dir <- file.path(plots_dir, "figure")
+comparison_plots_dir <- file.path(plots_dir, "baseline_kmeans_comparison")
+figure_dir <- file.path(comparison_plots_dir, "figure")
 paper_figures_dir <- file.path(repo_dir, "..", "smoothclust_paper", "figures")
 
 dir.create(figure_dir, recursive = TRUE, showWarnings = FALSE)

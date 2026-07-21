@@ -22,12 +22,12 @@ external_plots_dir <- file.path(plots_dir, "external_clustering")
 summary_plots_dir <- file.path(external_plots_dir, "summary_plots")
 cluster_plots_dir <- file.path(external_plots_dir, "cluster_maps")
 local_bd_plots_dir <- file.path(external_plots_dir, "local_BD_maps")
-figure_2_dir <- file.path(external_plots_dir, "figure_2")
+figure_dir <- file.path(external_plots_dir, "figure")
 
 dir.create(summary_plots_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(cluster_plots_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(local_bd_plots_dir, recursive = TRUE, showWarnings = FALSE)
-dir.create(figure_2_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(figure_dir, recursive = TRUE, showWarnings = FALSE)
 
 smoothclust_summary_file <- file.path(results_dir, "GBM_BD_summary.csv")
 baseline_summary_file <- file.path(results_dir, "GBM_BD_baseline_kmeans_summary.csv")
@@ -292,7 +292,7 @@ bd_method_plot <- ggplot(
 
 save_plot(
   bd_method_plot,
-  file.path(figure_2_dir, "GBM_Figure2_external_clustering_raw_BD_by_method"),
+  file.path(figure_dir, "GBM_external_clustering_raw_BD_by_method"),
   width = 6,
   height = 4.2
 )
@@ -454,8 +454,8 @@ external_maps_figure <- (
 save_plot(
   external_maps_figure,
   file.path(
-    figure_2_dir,
-    paste0("GBM_Figure2_external_clustering_maps_", map_sample_id)
+    figure_dir,
+    paste0("GBM_external_clustering_maps_", map_sample_id)
   ),
   width = 10.5,
   height = 6.8
