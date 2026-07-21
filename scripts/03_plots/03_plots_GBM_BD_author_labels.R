@@ -60,11 +60,8 @@ rho_label <- function(x, y) {
   if (sum(ok) < 3L) {
     return("rho = NA")
   }
-  test <- suppressWarnings(cor.test(x[ok], y[ok], method = "spearman", exact = FALSE))
-  paste0(
-    "rho = ", sprintf("%.2f", unname(test$estimate)),
-    "\np = ", scales::pvalue(test$p.value, accuracy = 0.001)
-  )
+  rho <- suppressWarnings(cor(x[ok], y[ok], method = "spearman"))
+  paste0("rho = ", sprintf("%.2f", rho))
 }
 
 
@@ -79,17 +76,25 @@ label_levels <- c("org1", "org2", "mp", "layer")
 label_display_levels <- c(
   "org1 zones (3 classes)",
   "org2 zones (5 classes)",
-  "Leiden metaprogram labels",
+  "Dominant metaprogram labels",
   "State layers (5 classes)"
 )
 
+expected_mp_display <- "Dominant metaprogram labels"
+if (!identical(
+  unique(coverage$author_label_display[coverage$author_label_col == "mp"]),
+  expected_mp_display
+) || !identical(
+  unique(author_bd$author_label_display[author_bd$author_label_col == "mp"]),
+  expected_mp_display
+)) {
+  stop(
+    "Author-label inputs do not use the expected dominant-metaprogram terminology."
+  )
+}
+
 coverage <- set_label_factors(coverage)
 author_bd <- set_label_factors(author_bd)
-
-sample_biology$organization_group <- factor(
-  sample_biology$organization_group,
-  levels = c("Structured-low", "Structured-high")
-)
 
 author_bd <- merge(
   author_bd,
@@ -124,12 +129,6 @@ label_palette <- setNames(
   grDevices::hcl.colors(length(label_levels), palette = "Dark 3"),
   label_levels
 )
-
-organization_palette <- c(
-  "Structured-low" = "#8C8C8C",
-  "Structured-high" = "#1B9E77"
-)
-
 
 ################################################################################
 # Panel A: representative label maps and local BD maps
@@ -372,51 +371,6 @@ save_plot(
 
 
 ################################################################################
-# Panel D: multi-sample structured-organization group comparison
-################################################################################
-
-structured_group_plot <- ggplot(
-  biology_bd,
-  aes(x = organization_group, y = relative_boundary_density, fill = organization_group)
-) +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "gray45") +
-  stat_summary(
-    aes(group = organization_group),
-    fun = median,
-    geom = "crossbar",
-    width = 0.45,
-    linewidth = 0.35,
-    color = "gray35",
-    show.legend = FALSE
-  ) +
-  geom_point(
-    position = position_jitter(width = 0.12, height = 0, seed = 1001),
-    shape = 21,
-    size = 2.2,
-    color = "gray20",
-    alpha = 0.9
-  ) +
-  facet_wrap(~ author_label_display, nrow = 1) +
-  scale_fill_manual(values = organization_palette, guide = "none") +
-  scale_y_continuous(limits = c(0, 1)) +
-  labs(
-    x = "Structured organization group",
-    y = "Relative boundary density"
-  ) +
-  theme(
-    axis.text.x = element_text(angle = 25, hjust = 1),
-    legend.position = "none"
-  )
-
-save_plot(
-  structured_group_plot,
-  file.path(supplement_dir, "GBM_author_label_revised_relative_BD_by_structured_group_supp"),
-  width = 8,
-  height = 4.2
-)
-
-
-################################################################################
 # Supporting QC plot: author label coverage
 ################################################################################
 
@@ -451,7 +405,6 @@ save_plot(
 summary_row_plot <- wrap_plots(
   relative_bd_label_plot,
   structured_bd_plot,
-  structured_group_plot,
   nrow = 1,
   guides = "collect"
 )
@@ -469,6 +422,6 @@ s5_plot <- wrap_plots(
 save_plot(
   s5_plot,
   file.path(supplement_dir, "GBM_author_label_biology_supp"),
-  width = 15,
+  width = 12,
   height = 10
 )

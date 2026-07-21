@@ -27,20 +27,20 @@ author_label_metadata <- data.frame(
   author_label_section = c(
     "org1_zonal_labels",
     "org2_zonal_labels",
-    "leiden_labels",
+    "dominant_metaprogram_labels",
     "state_layer_labels"
   ),
   author_label_display = c(
     "org1 zones (3 classes)",
     "org2 zones (5 classes)",
-    "Leiden metaprogram labels",
+    "Dominant metaprogram labels",
     "State layers (5 classes)"
   ),
   author_label_short = c("org1", "org2", "mp", "layer"),
   author_label_description = c(
     "structured_disorganized_intermediate_zones",
     "structured_disorganized_malignancy_zones",
-    "leiden_metaprogram_label",
+    "dominant_metaprogram_label",
     "five_layer_state_model"
   ),
   stringsAsFactors = FALSE
@@ -170,11 +170,6 @@ for (sample_id in sample_ids) {
   ivygap <- colData(spe)$author_ivygap[labeled_ix]
   cna_bin <- colData(spe)$author_cna_bin[labeled_ix]
   fraction_structured <- label_proportion(org1, "struct")
-  organization_group <- ifelse(
-    is.na(fraction_structured),
-    NA_character_,
-    ifelse(fraction_structured >= 0.5, "Structured-high", "Structured-low")
-  )
   
   sample_biology_summary <- rbind(
     sample_biology_summary,
@@ -182,7 +177,6 @@ for (sample_id in sample_ids) {
       sample_id = sample_id,
       geo_sample_id = unique(as.character(colData(spe)$geo_sample_id)[sample_ix])[1],
       author_sample_id = author_sample_id,
-      organization_group = organization_group,
       n_spots = sum(sample_ix),
       n_labeled_spots = sum(labeled_ix),
       fraction_structured = fraction_structured,

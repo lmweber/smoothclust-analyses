@@ -37,6 +37,10 @@ stopifnot(
             "../smoothclust_paper/figures/GBM_author_label_biology_supp.pdf", 
             overwrite = TRUE))
 stopifnot(
+  file.copy("plots/GBM/author_labels/within_tumor/GBM_author_label_within_tumor_supp.pdf",
+            "../smoothclust_paper/figures/GBM_author_label_within_tumor_supp.pdf",
+            overwrite = TRUE))
+stopifnot(
   file.copy("plots/GBM/runtime/figure/GBM_supp_runtime_summary.pdf", 
             "../smoothclust_paper/figures/GBM_supp_runtime_summary.pdf", 
             overwrite = TRUE))
