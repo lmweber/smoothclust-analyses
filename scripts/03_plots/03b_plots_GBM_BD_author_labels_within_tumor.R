@@ -368,9 +368,9 @@ composition_plot <- ggplot(
   scale_fill_manual(values = mp_palette, drop = FALSE, guide = "none") +
   scale_y_continuous(
     labels = percent_format(accuracy = 1),
-    limits = c(0, 1),
     expand = expansion(mult = c(0, 0.01))
   ) +
+  coord_cartesian(ylim = c(0, 1)) +
   labs(
     title = "ZH881 metaprogram composition",
     x = "Section",
@@ -584,6 +584,7 @@ all_tumor_plot <- ggplot() +
     low = "#F7FBFF",
     high = "#2171B5",
     limits = c(0, 1),
+    breaks = c(0, 0.5, 1),
     labels = percent_format(accuracy = 1),
     oob = scales::squish
   ) +
@@ -606,7 +607,7 @@ all_tumor_plot <- ggplot() +
     shape = guide_legend(nrow = 1, byrow = TRUE),
     fill = guide_colorbar(
       title.position = "top",
-      barwidth = grid::unit(2.2, "cm"),
+      barwidth = grid::unit(2.8, "cm"),
       barheight = grid::unit(0.25, "cm")
     )
   )
