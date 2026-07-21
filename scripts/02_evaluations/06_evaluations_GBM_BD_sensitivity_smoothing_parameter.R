@@ -260,11 +260,9 @@ smoothing_grid <- make_smoothing_grid()
 spe_list <- list()
 bd_summary <- data.frame()
 
-for (sample_i in seq_along(sample_ids)) {
-  sample_id <- sample_ids[sample_i]
+for (sample_id in sample_ids) {
   message("Processing sample: ", sample_id)
   
-  sample_seed <- seed + sample_i * 1000L
   spe_sub <- spe[, as.character(colData(spe)$sample_id) == sample_id]
   size_factors <- as.numeric(colData(spe_sub)[[size_factor_col]])
   size_factors <- size_factors / mean(size_factors)
@@ -286,7 +284,9 @@ for (sample_i in seq_along(sample_ids)) {
     top_hvgs <- getTopHVGs(dec, prop = hvg_prop)
     n_pcs_use <- min(n_pcs, length(top_hvgs), ncol(spe_setting) - 1L)
     
-    set.seed(sample_seed)
+    # Match the primary GBM analysis and reset the seed for each setting so
+    # stochastic steps are controlled across smoothing-parameter comparisons.
+    set.seed(seed)
     spe_setting <- runPCA(
       spe_setting,
       subset_row = top_hvgs,
@@ -300,7 +300,7 @@ for (sample_i in seq_along(sample_ids)) {
       label_col <- make_label_col(setting$smoothing_setting_id, n_clusters)
       local_col <- paste0("local_bd_", label_col)
       
-      set.seed(sample_seed + n_clusters)
+      set.seed(seed + n_clusters)
       clus <- kmeans(
         pca,
         centers = n_clusters,
@@ -388,6 +388,8 @@ parameters <- data.frame(
   cluster_numbers = paste(cluster_numbers, collapse = ","),
   kmeans_nstart = kmeans_nstart,
   seed = seed,
+  pca_seed_strategy = "seed for each sample and smoothing setting",
+  kmeans_seed_strategy = "seed + n_clusters for each sample and smoothing setting",
   parallel_threads = parallel_threads,
   stringsAsFactors = FALSE
 )
