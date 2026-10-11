@@ -1,5 +1,5 @@
 ################################################################################
-# Simulate calibration and spatial-organization behavior of analytic BD
+# Simulation: illustrate composition adjustment underlying relative BD
 ################################################################################
 
 # Run from the smoothclust-analyses repository root directory.
@@ -8,8 +8,8 @@ library(smoothclust)
 library(ggplot2)
 library(patchwork)
 
-results_dir <- file.path("results", "sim_BD_calibration")
-plots_dir <- file.path("plots", "sim_BD_calibration")
+results_dir <- file.path("results", "sim_composition")
+plots_dir <- file.path("plots", "sim_composition")
 dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(plots_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -40,7 +40,7 @@ evaluate_labels <- function(labels, simulation, state, replicate, label_seed) {
   )
 }
 
-# Null calibration: independently randomize labels while retaining exact counts.
+# Random-label reference: randomize labels while retaining exact counts.
 null_proportions <- c(0.1, 0.3, 0.5)
 null_results <- do.call(rbind, lapply(seq_along(null_proportions), function(i) {
   proportion <- null_proportions[i]
@@ -52,7 +52,7 @@ null_results <- do.call(rbind, lapply(seq_along(null_proportions), function(i) {
       rep("B", n_spots - round(n_spots * proportion))
     ))
     evaluate_labels(
-      labels, "null_calibration", sprintf("%.1f", proportion), j,
+      labels, "random_label_reference", sprintf("%.1f", proportion), j,
       label_seed
     )
   }))
@@ -93,9 +93,37 @@ organization_results$state <- factor(
   organization_results$state, levels = names(organization_labels)
 )
 
+# Composition series: move one straight interface without changing its length.
+interface_x <- round(grid_side * null_proportions)
+interface_graph_seed <- seed + 6001L
+interface_labels <- lapply(interface_x, function(x) {
+  ifelse(coords[, "x"] <= x, "A", "B")
+})
+names(interface_labels) <- paste0(
+  round(100 * null_proportions), ":", round(100 * (1 - null_proportions))
+)
+interface_results <- do.call(rbind, lapply(seq_along(interface_labels), function(i) {
+  # Hold the neighbor-search seed fixed across these deterministic label maps.
+  set.seed(interface_graph_seed)
+  evaluate_labels(
+    interface_labels[[i]], "straight_interface_series",
+    names(interface_labels)[i], 1L, NA_integer_
+  )
+}))
+interface_results$state <- factor(
+  interface_results$state, levels = names(interface_labels)
+)
+interface_results$interface_x <- interface_x
+interface_results$graph_seed <- interface_graph_seed
+
 write.csv(
   null_results,
-  file.path(results_dir, "BD_null_calibration.csv"),
+  file.path(results_dir, "BD_random_label_reference.csv"),
+  row.names = FALSE
+)
+write.csv(
+  interface_results,
+  file.path(results_dir, "BD_straight_interface_series.csv"),
   row.names = FALSE
 )
 write.csv(
@@ -107,13 +135,14 @@ write.csv(
   data.frame(
     grid_side = grid_side, n_spots = n_spots, boundary_k = boundary_k,
     n_null_replicates = n_null_replicates,
-    seed = seed, n_threads = n_threads
+    seed = seed, n_threads = n_threads,
+    interface_graph_seed = interface_graph_seed
   ),
   file.path(results_dir, "BD_simulation_parameters.csv"),
   row.names = FALSE
 )
 
-# Figure: spatial configurations, null calibration, and organization response.
+# Figure: random-label reference, organization, and composition adjustment.
 label_palette <- c(A = "#0072B2", B = "#E69F00")
 theme_set(
   theme_bw(base_size = 9) +
@@ -159,7 +188,30 @@ null_results$composition <- factor(
          round(100 * (1 - null_results$proportion_A))),
   levels = c("10:90", "30:70", "50:50")
 )
-null_plot <- ggplot(
+null_expectations <- unique(null_results[c(
+  "composition", "expected_boundary_density"
+)])
+null_raw_plot <- ggplot(null_results, aes(composition, boundary_density)) +
+  geom_boxplot(
+    width = 0.55, outlier.shape = NA, fill = "#D55E00",
+    alpha = 0.55, linewidth = 0.35
+  ) +
+  geom_jitter(width = 0.12, height = 0, size = 0.7, alpha = 0.45) +
+  geom_errorbar(
+    data = null_expectations,
+    aes(x = composition, ymin = expected_boundary_density,
+        ymax = expected_boundary_density),
+    inherit.aes = FALSE, width = 0.7, linetype = "dashed",
+    color = "grey35", linewidth = 0.4
+  ) +
+  stat_summary(fun = mean, geom = "point", shape = 23, size = 2,
+               fill = "white") +
+  labs(
+    title = "B  Random arrangements: raw BD",
+    subtitle = "Dashed bars: analytic composition-specific expectation",
+    x = "A:B label composition", y = "Raw BD"
+  )
+null_relative_plot <- ggplot(
   null_results, aes(composition, relative_boundary_density)
 ) +
   geom_hline(
@@ -174,9 +226,11 @@ null_plot <- ggplot(
   stat_summary(fun = mean, geom = "point", shape = 23, size = 2,
                fill = "white") +
   labs(
-    title = "B  Null centering with exact label counts",
+    title = "Random arrangements: relative BD",
+    subtitle = "After composition adjustment; dashed line: reference of 1",
     x = "A:B label composition", y = "Relative BD"
   )
+null_plot <- null_raw_plot + null_relative_plot
 
 p_raw <- ggplot(organization_results, aes(state, group = 1)) +
   geom_line(aes(y = boundary_density, color = "Observed"), linewidth = 0.6) +
@@ -202,17 +256,41 @@ p_relative <- ggplot(
              color = "grey35", linewidth = 0.4) +
   geom_line(color = "#009E73", linewidth = 0.6) +
   geom_point(color = "#009E73", size = 1.8) +
-  labs(x = NULL, y = "Relative BD") +
+  labs(title = "After composition adjustment", x = NULL, y = "Relative BD") +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 organization_plot <- p_raw + p_relative
 
-figure <- maps_plot / null_plot / organization_plot +
-  plot_layout(heights = c(0.95, 1.1, 1.25))
+interface_plots <- lapply(seq_along(interface_labels), function(i) {
+  result <- interface_results[i, ]
+  map <- data.frame(x = coords[, "x"], y = coords[, "y"],
+                    label = interface_labels[[i]])
+  ggplot(map, aes(x, y, fill = label)) +
+    geom_tile() +
+    scale_fill_manual(values = label_palette, guide = "none") +
+    coord_equal(expand = FALSE) +
+    labs(
+      title = paste0(if (i == 1L) "D  " else "", "A:B = ", result$state),
+      subtitle = sprintf(
+        "raw BD = %.3f; expected = %.3f\nrelative BD = %.3f",
+        result$boundary_density, result$expected_boundary_density,
+        result$relative_boundary_density
+      )
+    ) +
+    theme_void(base_size = 9) +
+    theme(
+      plot.title = element_text(face = "bold", size = 9, hjust = 0.5),
+      plot.subtitle = element_text(size = 7.5, hjust = 0.5)
+    )
+})
+interface_plot <- wrap_plots(interface_plots, nrow = 1)
+
+figure <- maps_plot / null_plot / organization_plot / interface_plot +
+  plot_layout(heights = c(0.95, 1.1, 1.25, 1.2))
 ggsave(
-  file.path(plots_dir, "sim_BD_calibration.pdf"),
-  figure, width = 11, height = 8.5, bg = "white"
+  file.path(plots_dir, "sim_composition.pdf"),
+  figure, width = 11, height = 10.5, bg = "white"
 )
 ggsave(
-  file.path(plots_dir, "sim_BD_calibration.png"),
-  figure, width = 11, height = 8.5, dpi = 300, bg = "white"
+  file.path(plots_dir, "sim_composition.png"),
+  figure, width = 11, height = 10.5, dpi = 300, bg = "white"
 )

@@ -1,5 +1,5 @@
 ################################################################################
-# Oversmoothing simulation
+# Simulation: oversmoothing
 ################################################################################
 
 # Run from the smoothclust-analyses repository root directory.
@@ -253,7 +253,7 @@ p_relative <- ggplot(metrics, aes(100 * bandwidth, relative_boundary_density)) +
   geom_point(color = "#CC79A7", size = 2) +
   scale_y_log10() +
   labs(
-    title = "Composition-adjusted summary",
+    title = "Relative BD: composition-adjusted summary",
     subtitle = "Dashed: truth; dotted: random-label expectation",
     x = "Smoothing bandwidth (% of section width)",
     y = "Relative BD (log scale)"

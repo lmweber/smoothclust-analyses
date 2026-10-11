@@ -112,10 +112,10 @@ copy_figure(
 )
 
 
-# BD calibration simulation ----------------------------------------------------
+# Composition simulation -------------------------------------------------------
 
 copy_figure(
-  "plots/sim_BD_calibration/sim_BD_calibration.pdf"
+  "plots/sim_composition/sim_composition.pdf"
 )
 
 
