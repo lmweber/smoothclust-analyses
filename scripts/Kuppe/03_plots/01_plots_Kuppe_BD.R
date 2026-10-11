@@ -21,6 +21,10 @@ bd <- read.csv(
 spots <- readRDS(file.path(
   results_dir, "Kuppe_celltype_niche_BD_spot_data.rds"
 ))
+label_counts <- read.csv(
+  file.path(results_dir, "Kuppe_author_celltype_niche_counts.csv"),
+  stringsAsFactors = FALSE
+)
 
 group_levels <- c(
   "myogenic-enriched", "ischaemic-enriched", "fibrotic-enriched"
@@ -40,6 +44,31 @@ bd$sample_group <- factor(
   bd$sample_group, levels = group_levels, labels = group_labels
 )
 bd$region_label <- factor(bd$region_label, levels = region_levels)
+bd$sample_group_index <- match(bd$sample_group_key, group_levels)
+bd$x_offset <- ave(
+  seq_len(nrow(bd)), bd$sample_group_key,
+  FUN = function(i) seq(-0.16, 0.16, length.out = length(i))
+)
+bd$x_plot <- bd$sample_group_index + bd$x_offset
+
+patient_counts <- table(bd$patient_id)
+repeated_patients <- sort(names(patient_counts)[patient_counts > 1])
+bd$patient_display <- ifelse(
+  bd$patient_id %in% repeated_patients,
+  bd$patient_id,
+  "Single-section patient"
+)
+bd$patient_display <- factor(
+  bd$patient_display,
+  levels = c(repeated_patients, "Single-section patient")
+)
+patient_palette <- c(
+  setNames(
+    grDevices::hcl.colors(length(repeated_patients), "Dark 3"),
+    repeated_patients
+  ),
+  "Single-section patient" = "grey55"
+)
 
 theme_set(
   theme_bw(base_size = 11) +
@@ -52,80 +81,218 @@ theme_set(
 
 save_plot <- function(plot, filename, width, height) {
   ggsave(paste0(filename, ".png"), plot, width = width, height = height,
-         dpi = 300)
-  ggsave(paste0(filename, ".pdf"), plot, width = width, height = height)
+         dpi = 300, bg = "white")
+  ggsave(paste0(filename, ".pdf"), plot, width = width, height = height,
+         bg = "white")
 }
 
-bd_long <- rbind(
-  data.frame(
-    bd[, c("section_id", "sample_id", "patient_id", "sample_group",
-           "region_label")],
-    metric = "Raw boundary density", value = bd$boundary_density
-  ),
-  data.frame(
-    bd[, c("section_id", "sample_id", "patient_id", "sample_group",
-           "region_label")],
-    metric = "Relative boundary density",
-    value = bd$relative_boundary_density
-  )
-)
-bd_long$metric <- factor(
-  bd_long$metric, c("Raw boundary density", "Relative boundary density")
-)
 jitter <- position_jitter(width = 0.09, height = 0, seed = 123)
 
-p_group <- ggplot(
-  bd_long,
-  aes(x = sample_group, y = value, color = sample_group, fill = sample_group)
+p_relative <- ggplot(
+  bd,
+  aes(x = x_plot, y = relative_boundary_density)
 ) +
-  geom_boxplot(width = 0.58, alpha = 0.15, outlier.shape = NA) +
-  geom_point(
-    aes(shape = region_label), position = jitter, size = 2.5, alpha = 0.9
-  ) +
-  facet_wrap(~ metric, scales = "free_y") +
-  scale_color_manual(values = group_palette) +
-  scale_fill_manual(values = group_palette) +
-  labs(
-    title = "Myocardial cell-type-niche boundary density by sample group",
-    subtitle = paste(
-      "Exact author spot annotations; each point is one Visium section"
+  geom_boxplot(
+    aes(
+      x = sample_group_index, group = sample_group_key,
+      fill = sample_group_key
     ),
-    x = NULL, y = NULL, shape = "Anatomical region"
+    width = 0.58, alpha = 0.2, outlier.shape = NA
+  ) +
+  geom_line(
+    data = bd[bd$patient_id %in% repeated_patients, ],
+    aes(group = patient_id, color = patient_display),
+    linewidth = 0.5, alpha = 0.65
+  ) +
+  geom_point(
+    aes(color = patient_display, shape = region_label),
+    size = 2.6, alpha = 0.95
+  ) +
+  geom_point(
+    data = bd[bd$dominant_niche_gt80, ],
+    shape = 1, color = "black", size = 4.3, stroke = 0.9
+  ) +
+  geom_text(
+    data = bd[bd$dominant_niche_gt80, ],
+    aes(label = section_id), color = "black", size = 2.6,
+    nudge_y = 0.025, show.legend = FALSE
+  ) +
+  scale_x_continuous(breaks = seq_along(group_levels), labels = group_labels) +
+  scale_color_manual(
+    values = patient_palette, breaks = repeated_patients, drop = FALSE
+  ) +
+  scale_fill_manual(values = setNames(group_palette, group_levels)) +
+  labs(
+    title = "Relative boundary density (primary)",
+    subtitle = paste(
+      "Lines and colors identify patients with repeated sections;",
+      "rings mark >80% one niche"
+    ),
+    x = NULL, y = "Relative boundary density",
+    color = "Patient identity", shape = "Histomorphological region"
   ) +
   guides(
-    color = "none", fill = "none", shape = guide_legend(nrow = 1)
+    fill = "none",
+    color = guide_legend(nrow = 1, override.aes = list(shape = 16)),
+    shape = guide_legend(nrow = 2, byrow = TRUE)
   ) +
-  theme(legend.position = "bottom")
+  theme(
+    legend.position = "bottom",
+    legend.box = "vertical",
+    axis.text.x = element_text(angle = 15, hjust = 1)
+  )
+
+p_expected <- ggplot(
+  bd,
+  aes(
+    x = expected_boundary_density, y = boundary_density,
+    color = sample_group
+  )
+) +
+  geom_abline(slope = 1, intercept = 0, color = "grey60", linetype = 2) +
+  geom_point(
+    aes(shape = dominant_niche_gt80), size = 2.8, alpha = 0.9
+  ) +
+  geom_text(
+    data = bd[bd$dominant_niche_gt80, ],
+    aes(label = section_id), size = 2.6, color = "black",
+    nudge_x = 0.015, nudge_y = 0.025, hjust = 0, show.legend = FALSE
+  ) +
+  scale_color_manual(values = setNames(group_palette, group_labels)) +
+  scale_shape_manual(
+    values = c(`FALSE` = 16, `TRUE` = 1),
+    labels = c(`FALSE` = "No", `TRUE` = "Yes")
+  ) +
+  coord_equal() +
+  labs(
+    title = "Raw versus expected density (secondary)",
+    subtitle = "Relative BD = raw / analytic expectation",
+    x = "Expected boundary density",
+    y = "Raw boundary density",
+    color = "Histomorphological\nsample category",
+    shape = ">80% one niche"
+  ) +
+  guides(
+    color = guide_legend(nrow = 2, byrow = TRUE),
+    shape = "none"
+  ) +
+  theme(legend.position = "bottom", legend.box = "vertical")
+
+p_group <- p_relative + p_expected +
+  plot_layout(widths = c(1.4, 1)) +
+  plot_annotation(
+    title = paste(
+      "Published computational cell-type niches across Kuppe myocardial",
+      "sample categories"
+    ),
+    subtitle = "Each point is one Visium section; comparisons are descriptive",
+    tag_levels = "A"
+  )
 
 save_plot(
   p_group,
   file.path(summary_dir, "Kuppe_celltype_niche_BD_by_sample_group"),
-  9.5, 5.5
+  12.5, 7.5
 )
 
 p_region <- ggplot(
-  bd_long,
-  aes(x = region_label, y = value, color = region_label, fill = region_label)
+  bd,
+  aes(
+    x = region_label, y = relative_boundary_density,
+    color = sample_group, fill = region_label
+  )
 ) +
   geom_boxplot(width = 0.58, alpha = 0.15, outlier.shape = NA) +
   geom_point(position = jitter, size = 2.5, alpha = 0.9) +
-  facet_wrap(~ metric, scales = "free_y") +
-  scale_color_manual(values = region_palette) +
+  scale_color_manual(values = setNames(group_palette, group_labels)) +
   scale_fill_manual(values = region_palette) +
   labs(
-    title = "Myocardial cell-type-niche boundary density by tissue region",
-    subtitle = "Authors' major histomorphological region labels",
-    x = NULL, y = NULL
+    title = "Relative boundary density by histomorphological region",
+    subtitle = paste(
+      "Published computational cell-type-niche labels;",
+      "each point is one Visium section"
+    ),
+    x = NULL, y = "Relative boundary density",
+    color = "Histomorphological\nsample category"
   ) +
   theme(
-    legend.position = "none",
+    legend.position = "bottom",
     axis.text.x = element_text(angle = 30, hjust = 1)
-  )
+  ) +
+  guides(fill = "none")
 
 save_plot(
   p_region,
   file.path(summary_dir, "Kuppe_celltype_niche_BD_by_tissue_region"),
-  10, 5.5
+  9, 5.5
+)
+
+# Display niche composition to make highly imbalanced sections transparent.
+label_counts$niche_fraction <- ave(
+  label_counts$n_spots, label_counts$section_id,
+  FUN = function(x) x / sum(x)
+)
+composition_metadata <- bd[
+  match(label_counts$section_id, bd$section_id),
+  c(
+    "section_id", "relative_boundary_density", "dominant_niche_gt80"
+  )
+]
+label_counts <- cbind(
+  label_counts, composition_metadata[, -1, drop = FALSE]
+)
+section_order <- bd$section_id[order(
+  bd$sample_group_index, bd$relative_boundary_density
+)]
+section_labels <- sprintf(
+  "%s / %s (rBD %.2f)%s",
+  bd$section_id, bd$patient_id, bd$relative_boundary_density,
+  ifelse(bd$dominant_niche_gt80, " [>80%]", "")
+)
+names(section_labels) <- bd$section_id
+label_counts$section_label <- factor(
+  section_labels[label_counts$section_id],
+  levels = rev(section_labels[section_order])
+)
+label_counts$sample_group <- factor(
+  label_counts$sample_group, levels = group_levels, labels = group_labels
+)
+
+p_composition <- ggplot(
+  label_counts,
+  aes(
+    x = niche_fraction, y = section_label,
+    fill = author_celltype_niche
+  )
+) +
+  geom_col(width = 0.82) +
+  facet_grid(sample_group ~ ., scales = "free_y", space = "free_y") +
+  scale_fill_manual(
+    values = setNames(
+      grDevices::hcl.colors(9, palette = "Dark 3"),
+      paste0("ctniche_", 1:9)
+    ),
+    labels = paste("Niche", 1:9)
+  ) +
+  scale_x_continuous(labels = scales::percent) +
+  labs(
+    title = "Composition of published computational cell-type niches",
+    subtitle = paste(
+      "Sections ordered within sample category by relative BD;",
+      "[>80%] denotes >80% one niche"
+    ),
+    x = "Fraction of labeled spots", y = NULL, fill = "Cell-type niche"
+  ) +
+  theme(
+    legend.position = "bottom",
+    panel.grid.major.y = element_blank(),
+    strip.text.y = element_text(angle = 0)
+  )
+
+save_plot(
+  p_composition,
+  file.path(summary_dir, "Kuppe_celltype_niche_composition_by_section"),
+  10, 10
 )
 
 # Show the section nearest the median relative BD within each author group.
@@ -199,7 +366,10 @@ for (i in seq_len(nrow(examples))) {
 p_spatial <- wrap_plots(spatial_plots, ncol = 2, guides = "collect") +
   plot_annotation(
     title = "Representative Kuppe myocardial infarction sections",
-    subtitle = "One median-relative-BD section from each author sample group"
+    subtitle = paste(
+      "Published computational cell-type niches;",
+      "one median-relative-BD section from each sample category"
+    )
   )
 
 save_plot(
