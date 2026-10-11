@@ -12,6 +12,8 @@ library(SpatialExperiment)
 
 dataset_id <- "GBM"
 geo_accession <- "GSE237183"
+min_spot_umi <- 1000
+max_spot_pct_mito <- 20
 
 repo_dir <- "."
 data_dir <- file.path(repo_dir, "data", dataset_id)
@@ -111,9 +113,8 @@ spe <- BiocIO::import(vis)
 
 spe <- spe[, as.integer(colData(spe)$in_tissue) == 1]
 
-# Calculate non-mitochondrial library totals from all raw genes, before any
-# expression-based gene filtering. Spots with no usable non-mitochondrial counts
-# cannot have positive size factors and are removed as an invariant QC step.
+# Reproduce the Greenwald et al. spot-level QC: retain in-tissue spots with at
+# least 1,000 total UMIs and at most 20% mitochondrial UMIs.
 counts <- assay(spe, "counts")
 gene_symbols <- as.character(rowData(spe)$Symbol)
 is_mito <- !is.na(gene_symbols) &
@@ -131,23 +132,34 @@ if (!any(!is_mito)) {
   stop("No non-mitochondrial genes were identified.")
 }
 
+sum_umi <- Matrix::colSums(counts)
+mito_umi <- Matrix::colSums(counts[is_mito, , drop = FALSE])
 nonmito_umi <- Matrix::colSums(counts[!is_mito, , drop = FALSE])
-spot_filter <- is.finite(nonmito_umi) & nonmito_umi > 0
+pct_mito <- 100 * mito_umi / sum_umi
+spot_filter <- is.finite(sum_umi) &
+  is.finite(pct_mito) &
+  sum_umi >= min_spot_umi &
+  pct_mito <= max_spot_pct_mito &
+  nonmito_umi > 0
 
-if (any(!spot_filter)) {
-  message(
-    "Removing ", sum(!spot_filter),
-    " spot(s) with non-positive or non-finite non-mitochondrial library totals."
+qc_sample_id <- as.character(colData(spe)$sample_id)
+qc_summary <- do.call(rbind, lapply(sort(unique(qc_sample_id)), function(sample_id) {
+  ix <- qc_sample_id == sample_id
+  data.frame(
+    sample_id = sample_id,
+    n_in_tissue = sum(ix),
+    n_retained = sum(ix & spot_filter),
+    n_removed = sum(ix & !spot_filter),
+    n_below_min_umi = sum(ix & sum_umi < min_spot_umi),
+    n_above_max_pct_mito = sum(ix & pct_mito > max_spot_pct_mito, na.rm = TRUE),
+    n_nonfinite_or_zero_umi = sum(ix & (!is.finite(pct_mito) | sum_umi <= 0)),
+    stringsAsFactors = FALSE
   )
-}
-if (!any(spot_filter)) {
-  stop("No spots have positive, finite non-mitochondrial library totals.")
-}
+}))
 
 spe <- spe[, spot_filter]
 
-# Remove genes with zero counts across the retained spots. This does not affect
-# the non-mitochondrial library totals used for downstream normalization.
+# Remove genes with zero counts across the retained spots.
 spe <- spe[Matrix::rowSums(assay(spe, "counts")) > 0, ]
 
 
@@ -178,6 +190,8 @@ colData(spe)$nonmito_umi <- Matrix::colSums(counts[!is_mito, , drop = FALSE])
 colData(spe)$pct_mito <- 100 * colData(spe)$mito_umi / colData(spe)$sum_umi
 
 stopifnot(
+  all(colData(spe)$sum_umi >= min_spot_umi),
+  all(colData(spe)$pct_mito <= max_spot_pct_mito),
   all(is.finite(colData(spe)$nonmito_umi)),
   all(colData(spe)$nonmito_umi > 0),
   all(colData(spe)$sum_umi ==
@@ -190,8 +204,19 @@ stopifnot(
 metadata(spe)$dataset_id <- dataset_id
 metadata(spe)$geo_accession <- geo_accession
 metadata(spe)$sample_metadata <- sample_metadata
+metadata(spe)$spot_qc <- list(
+  min_spot_umi = min_spot_umi,
+  max_spot_pct_mito = max_spot_pct_mito,
+  summary = qc_summary
+)
 
 saveRDS(
   spe,
   file = file.path(processed_dir, "spe_GBM.rds")
+)
+
+write.csv(
+  qc_summary,
+  file = file.path(processed_dir, "GBM_preprocessing_QC_summary.csv"),
+  row.names = FALSE
 )

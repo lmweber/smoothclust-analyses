@@ -205,8 +205,6 @@ summarize_labeled_edges <- function(edges, labels) {
     boundary_density = boundary_density_value,
     expected_boundary_density = expected_boundary_density_value,
     relative_boundary_density = relative_boundary_density_value,
-    excess_boundary_density =
-      boundary_density_value - expected_boundary_density_value,
     mean_edge_distance = mean(retained$edge_distance),
     median_edge_distance = median(retained$edge_distance),
     max_edge_distance = max(retained$edge_distance)
@@ -278,7 +276,7 @@ require_columns(
   c(
     "sample_id", "author_label_col", "n_labels", "boundary_k",
     "mean_discordant", "boundary_density", "expected_boundary_density",
-    "relative_boundary_density", "excess_boundary_density"
+    "relative_boundary_density"
   ),
   "author_bd"
 )
@@ -356,8 +354,7 @@ for (author_label_col in bd_label_cols) {
 
   for (bd_col in c(
     "n_labels", "mean_discordant", "boundary_density",
-    "expected_boundary_density", "relative_boundary_density",
-    "excess_boundary_density"
+    "expected_boundary_density", "relative_boundary_density"
   )) {
     section_summary[[paste0(author_label_col, "_", bd_col)]] <-
       bd_sub[[bd_col]]
@@ -374,10 +371,8 @@ section_summary <- section_summary[, c(
   "fraction_structured", "fraction_mes_hyp",
   "mp_n_labels", "mp_mean_discordant", "mp_boundary_density",
   "mp_expected_boundary_density", "mp_relative_boundary_density",
-  "mp_excess_boundary_density", "layer_n_labels",
-  "layer_mean_discordant", "layer_boundary_density",
-  "layer_expected_boundary_density", "layer_relative_boundary_density",
-  "layer_excess_boundary_density"
+  "layer_n_labels", "layer_mean_discordant", "layer_boundary_density",
+  "layer_expected_boundary_density", "layer_relative_boundary_density"
 )]
 
 

@@ -241,7 +241,6 @@ for (sample_id in sample_ids) {
           boundary_density = bd$boundary_density,
           expected_boundary_density = bd$expected_boundary_density,
           relative_boundary_density = bd$relative_boundary_density,
-          excess_boundary_density = bd$excess_boundary_density,
           stringsAsFactors = FALSE
         )
       )

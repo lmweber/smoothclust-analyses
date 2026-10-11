@@ -98,8 +98,8 @@ author_bd <- set_label_factors(author_bd)
 
 author_bd <- merge(
   author_bd,
-  sample_biology,
-  by = c("sample_id", "geo_sample_id", "author_sample_id", "n_spots", "n_labeled_spots"),
+  sample_biology[, setdiff(names(sample_biology), "n_labeled_spots")],
+  by = c("sample_id", "geo_sample_id", "author_sample_id", "n_spots"),
   sort = FALSE
 )
 
@@ -325,16 +325,6 @@ structured_bd_plot <- ggplot(
     color = fraction_mes_hyp
   )
 ) +
-  geom_smooth(
-    data = biology_bd,
-    aes(x = fraction_structured, y = relative_boundary_density, group = 1),
-    inherit.aes = FALSE,
-    method = "lm",
-    se = FALSE,
-    linewidth = 0.45,
-    color = "gray35",
-    show.legend = FALSE
-  ) +
   geom_point(size = 2.5, alpha = 0.95) +
   geom_text(
     data = rho_df,

@@ -195,21 +195,21 @@ map_bd <- bd[
     bd$n_clusters == map_n_clusters,
 ]
 
-map_under <- map_bd[which.min(map_bd$smoothing_parameter_value), ]
-map_over <- map_bd[which.max(map_bd$smoothing_parameter_value), ]
+map_small <- map_bd[which.min(map_bd$smoothing_parameter_value), ]
+map_large <- map_bd[which.max(map_bd$smoothing_parameter_value), ]
 
-undersmoothing_map <- make_spatial_plot(
+small_bandwidth_map <- make_spatial_plot(
   spe_map,
-  map_under,
-  smoothing_level = "Undersmoothing"
+  map_small,
+  smoothing_level = "Smaller bandwidth"
 )
-oversmoothing_map <- make_spatial_plot(
+large_bandwidth_map <- make_spatial_plot(
   spe_map,
-  map_over,
-  smoothing_level = "Oversmoothing"
+  map_large,
+  smoothing_level = "Larger bandwidth"
 )
 
-spatial_maps_plot <- undersmoothing_map + oversmoothing_map +
+spatial_maps_plot <- small_bandwidth_map + large_bandwidth_map +
   plot_layout(ncol = 2, guides = "collect") &
   theme(legend.position = "right")
 

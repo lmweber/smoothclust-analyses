@@ -269,7 +269,6 @@ store_method_results <- function(
         boundary_density = bd$boundary_density,
         expected_boundary_density = bd$expected_boundary_density,
         relative_boundary_density = bd$relative_boundary_density,
-        excess_boundary_density = bd$excess_boundary_density,
         adjusted_rand_index = ari,
         sample_seed = sample_seed,
         stringsAsFactors = FALSE

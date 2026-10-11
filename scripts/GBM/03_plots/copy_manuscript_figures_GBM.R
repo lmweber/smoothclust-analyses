@@ -29,10 +29,6 @@ stopifnot(
             "../smoothclust_paper/figures/GBM_supp_sensitivity_boundary_k.pdf", 
             overwrite = TRUE))
 stopifnot(
-  file.copy("plots/GBM/permutation/figure/GBM_supp_permutation_BD.pdf", 
-            "../smoothclust_paper/figures/GBM_supp_permutation_BD.pdf", 
-            overwrite = TRUE))
-stopifnot(
   file.copy("plots/GBM/author_labels/supplementary/GBM_author_label_biology_supp.pdf", 
             "../smoothclust_paper/figures/GBM_author_label_biology_supp.pdf", 
             overwrite = TRUE))

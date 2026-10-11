@@ -97,6 +97,7 @@ spe_key <- paste(colData(spe)$author_sample_id, colData(spe)$barcode, sep = "___
 author_match <- match(spe_key, author_key)
 colData(spe)$author_metadata_match <- !is.na(author_match)
 
+# Retain author labels exactly as deposited.
 for (author_col in all_author_cols) {
   output_col <- paste0("author_", author_col)
   colData(spe)[[output_col]] <- author_metadata[[author_col]][author_match]
@@ -121,7 +122,7 @@ coverage_summary <- data.frame()
 for (sample_id in sample_ids) {
   sample_ix <- as.character(colData(spe)$sample_id) == sample_id
   author_sample_id <- unique(as.character(colData(spe)$author_sample_id)[sample_ix])[1]
-  
+
   for (author_label_col in author_label_cols) {
     author_col <- paste0("author_", author_label_col)
     labels <- colData(spe)[[author_col]][sample_ix]
@@ -259,7 +260,6 @@ for (sample_id in sample_ids) {
         boundary_density = bd$boundary_density,
         expected_boundary_density = bd$expected_boundary_density,
         relative_boundary_density = bd$relative_boundary_density,
-        excess_boundary_density = bd$excess_boundary_density,
         stringsAsFactors = FALSE
       )
     )
