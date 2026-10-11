@@ -132,5 +132,5 @@ copy_figure(
   "plots/runtime/runtime_core_workflow_summary.pdf"
 )
 copy_figure(
-  "plots/GBM/runtime/figure/GBM_supp_runtime_summary.pdf"
+  "plots/GBM/runtime_comparison/GBM_supp_runtime_summary.pdf"
 )
