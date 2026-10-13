@@ -221,7 +221,7 @@ p_method <- ggplot(
   )
 
 runtime_figure <- wrap_plots(
-  A = p_core, B = p_method, design = "AAA\n#B#",
+  A = p_core, B = p_method, design = "#A#\n#B#",
   widths = c(0.08, 1, 0.08), heights = c(1.15, 1)
 ) +
   plot_annotation(

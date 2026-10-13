@@ -336,6 +336,7 @@ structured_bd_plot <- ggplot(
     color = "MES-Hyp fraction"
   ) +
   theme(
+    axis.text.x = element_text(angle = 35, hjust = 1),
     legend.position = "right",
     legend.text = element_text(size = 9)
   )

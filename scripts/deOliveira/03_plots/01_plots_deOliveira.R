@@ -173,7 +173,7 @@ bd_table <- ggplot(table_cells, aes(x = x, y = y, label = label)) +
   ) +
   theme_void() +
   theme(
-    plot.title = element_text(size = 13, face = "bold"),
+    plot.title = element_text(size = 11, face = "bold"),
     plot.caption = element_text(size = 10, hjust = 0),
     plot.margin = margin(5.5, 5.5, 5.5, 5.5)
   )

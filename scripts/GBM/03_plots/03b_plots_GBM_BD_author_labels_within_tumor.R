@@ -621,25 +621,24 @@ all_tumor_plot <- ggplot() +
 # Supplementary figure
 ################################################################################
 
-figure_design <- "
-AAAAAAAAAAAA
-#BBBBBBBBBB#
-#CCCCCCCCCC#
-"
-
+# Keep tags on full-width rows while preserving the B/C content insets.
 within_tumor_supp_plot <- wrap_plots(
   A = wrap_elements(full = map_pair_plot),
-  B = wrap_elements(full = zh881_composition_context_plot),
-  C = all_tumor_plot,
-  design = figure_design,
+  B = wrap_elements(full = wrap_plots(
+    plot_spacer(), zh881_composition_context_plot, plot_spacer(),
+    nrow = 1, widths = c(1, 10, 1)
+  )),
+  C = wrap_elements(full = wrap_plots(
+    plot_spacer(), all_tumor_plot, plot_spacer(),
+    nrow = 1, widths = c(1, 10, 1)
+  )),
+  ncol = 1,
   heights = c(2, 1, 0.9)
 ) +
-  plot_annotation(
-    tag_levels = "A",
-    theme = theme(
-      plot.tag = element_text(face = "bold", size = 16),
-      plot.tag.position = c(0.005, 0.995)
-    )
+  plot_annotation(tag_levels = "A") &
+  theme(
+    plot.tag = element_text(face = "bold", size = 16, hjust = 0, vjust = 1),
+    plot.tag.position = c(0.05, 0.995)
   )
 
 save_plot(
