@@ -23,6 +23,8 @@ figures <- c(
   "plots/Miyoshi/summary_plots/Miyoshi_BD_ranked_sections.pdf",
   "plots/Miyoshi/spatial_maps/Miyoshi_q9_vs_WM_collapsed_map.pdf",
   "plots/Miyoshi/summary_plots/Miyoshi_BD_q9_vs_WM_collapsed.pdf",
+  # Published-annotation BD neighborhood sensitivity
+  "plots/BD_neighborhood_sensitivity/Kuppe_Miyoshi_BD_k_sensitivity.pdf",
   # Maynard
   "plots/Maynard/spatial_maps/Maynard_all_sections_manual_layer_maps.pdf",
   "plots/Maynard/spatial_maps/Maynard_all_sections_local_BD_maps.pdf",
