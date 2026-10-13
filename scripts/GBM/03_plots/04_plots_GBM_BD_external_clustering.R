@@ -266,9 +266,15 @@ method_axis_labels <- vapply(
       as.character(bd_k_map$clustering_setting[bd_k_map$method_display == method])
     )
     method_settings <- method_settings[!is.na(method_settings)]
-    method_settings <- sub("^K=", "k = ", method_settings)
+    method_settings <- sub("^K=", "K = ", method_settings)
+    axis_method <- switch(
+      method,
+      Banksy = "BANKSY",
+      clustSIGNAL = "ClustSIGNAL",
+      method
+    )
     
-    paste0(method, "\n(", paste(method_settings, collapse = ", "), ")")
+    paste0(axis_method, "\n(", paste(method_settings, collapse = ", "), ")")
   },
   character(1)
 )

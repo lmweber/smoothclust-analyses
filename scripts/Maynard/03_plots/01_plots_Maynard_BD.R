@@ -131,10 +131,13 @@ p_layer_maps <- p_layer_maps +
     title = "Published manual-layer annotations for all 12 DLPFC sections",
     theme = theme(plot.title = element_text(hjust = 0.5, face = "bold"))
   )
+# Preserve the paired summary above all annotation maps on the first atlas page.
+p_summary_and_layers <- p_summary / wrap_elements(full = p_layer_maps) +
+  plot_layout(heights = c(1, 2.2))
 save_plot(
-  p_layer_maps,
+  p_summary_and_layers,
   file.path(spatial_dir, "Maynard_all_sections_manual_layer_maps"),
-  8.5, 6.5
+  8.5, 10.2
 )
 
 p_local_maps <- wrap_plots(local_maps, ncol = 4, guides = "collect") &

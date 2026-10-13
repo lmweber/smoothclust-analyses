@@ -127,6 +127,58 @@ bd <- rbind(
   read.csv(file.path(results_dir, "deOliveira_VisiumHD_BD_summary.csv")),
   read.csv(file.path(results_dir, "deOliveira_Xenium_BD_summary.csv"))
 )
+
+# Numeric panel for the retained spatial figure; keep the historical bar export.
+bd_numeric <- bd[order(bd$platform, bd$label_source), ]
+label_sources <- c(
+  "OSTA distributed clusters" = "distributed labels",
+  "smoothclust + sketched PCA/k-means" = "smoothclust labels"
+)
+stopifnot(nrow(bd_numeric) == 3L, !anyNA(label_sources[bd_numeric$label_source]))
+table_values <- list(
+  c("Platform / label source", paste(
+    bd_numeric$platform, label_sources[bd_numeric$label_source], sep = " / "
+  )),
+  c("BD neighbors\n(k)", bd_numeric$boundary_k),
+  c("Raw BD", sprintf("%.4f", bd_numeric$boundary_density)),
+  c("Expected\nraw BD", sprintf("%.4f", bd_numeric$expected_boundary_density)),
+  c("Relative BD", sprintf("%.4f", bd_numeric$relative_boundary_density)),
+  c("Locations", format(
+    bd_numeric$n_locations, big.mark = ",", scientific = FALSE, trim = TRUE
+  ))
+)
+table_cells <- data.frame(
+  x = rep(c(0.15, 5.3, 6.65, 8.15, 9.75, 11.3), each = 4),
+  y = rep(4:1, length(table_values)),
+  label = unlist(table_values, use.names = FALSE),
+  hjust = rep(c(0, rep(0.5, 5)), each = 4),
+  fontface = rep(c("bold", rep("plain", 3)), length(table_values))
+)
+bd_table <- ggplot(table_cells, aes(x = x, y = y, label = label)) +
+  geom_text(aes(hjust = hjust, fontface = fontface), size = 3.1) +
+  geom_hline(yintercept = c(3.5, 0.5), colour = "#B8C2CC", linewidth = 0.3) +
+  scale_x_continuous(limits = c(0, 12), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0.3, 4.7), expand = c(0, 0)) +
+  labs(
+    title = "Boundary density within each illustrative analysis",
+    caption = paste(
+      "Visium HD: 8-µm bins; Xenium: segmented cells. Expected raw BD uses fixed label counts.",
+      "Each row describes one label map; values are not directly comparable across platforms or label sources.",
+      sep = "\n"
+    )
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.caption = element_text(size = 8, hjust = 0),
+    plot.margin = margin(5.5, 5.5, 5.5, 5.5)
+  )
+save_plot(
+  bd_table,
+  file.path(plots_dir, "deOliveira_BD_numeric_summary"),
+  7, 2
+)
+
 bd$analysis <- paste(bd$platform, bd$label_source, sep = "\n")
 # Plot raw observed and expected BD; annotate each panel with relative BD.
 bd_long <- rbind(

@@ -249,16 +249,8 @@ p_raw <- ggplot(organization_results, aes(state, group = 1)) +
     axis.text.x = element_text(angle = 30, hjust = 1),
     legend.position = "bottom"
   )
-p_relative <- ggplot(
-  organization_results, aes(state, relative_boundary_density, group = 1)
-) +
-  geom_hline(yintercept = 1, linetype = "dashed",
-             color = "grey35", linewidth = 0.4) +
-  geom_line(color = "#009E73", linewidth = 0.6) +
-  geom_point(color = "#009E73", size = 1.8) +
-  labs(title = "After composition adjustment", x = NULL, y = "Relative BD") +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
-organization_plot <- p_raw + p_relative
+# At fixed label counts, relative BD is a constant scaling of raw BD.
+organization_plot <- p_raw
 
 interface_plots <- lapply(seq_along(interface_labels), function(i) {
   result <- interface_results[i, ]

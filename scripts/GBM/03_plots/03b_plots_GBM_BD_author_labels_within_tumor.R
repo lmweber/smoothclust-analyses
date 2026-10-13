@@ -281,6 +281,7 @@ mp_map_plot <- map_base +
     data = map_df[!is.na(map_df$metaprogram), , drop = FALSE],
     aes(fill = metaprogram),
     shape = 21,
+    colour = NA,
     size = 0.52,
     stroke = 0
   ) +
@@ -383,7 +384,7 @@ composition_plot <- ggplot(
 
 
 ################################################################################
-# Panel C: relative BD and biological context for all five ZH881 sections
+# ZH881 relative BD and context; retain the context percentages in panel B
 ################################################################################
 
 zh881_bd_long <- data.frame(
@@ -496,12 +497,16 @@ zh881_context_plot <- ggplot(
     plot.margin = margin(0, 5.5, 5.5, 5.5)
   )
 
-zh881_detail_plot <- zh881_bd_plot / zh881_context_plot +
+zh881_composition_context_plot <- (
+  composition_plot +
+    labs(x = NULL) +
+    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+) / zh881_context_plot +
   plot_layout(heights = c(2.4, 1))
 
 
 ################################################################################
-# Panel D: descriptive within-tumor comparison across all 12 sections
+# Panel C: descriptive within-tumor comparison across all 12 sections
 ################################################################################
 
 section_summary <- section_summary[
@@ -619,15 +624,14 @@ all_tumor_plot <- ggplot() +
 
 figure_design <- "
 AAAAAA
-BBCCCC
-DDDDDD
+BBBBBB
+CCCCCC
 "
 
 within_tumor_supp_plot <- wrap_plots(
   A = wrap_elements(full = map_pair_plot),
-  B = composition_plot,
-  C = wrap_elements(full = zh881_detail_plot),
-  D = all_tumor_plot,
+  B = wrap_elements(full = zh881_composition_context_plot),
+  C = all_tumor_plot,
   design = figure_design,
   heights = c(1.55, 1, 0.9)
 ) +

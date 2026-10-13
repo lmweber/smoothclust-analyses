@@ -118,8 +118,14 @@ spatial_theme <- theme_void(base_size = 10) +
     plot.subtitle = element_text(hjust = 0.5, size = 8),
     legend.position = "bottom"
   )
-# Show five sections per page, pairing region labels with local BD.
-page_rows <- split(seq_len(nrow(q9)), ceiling(seq_len(nrow(q9)) / 5))
+# Two section-pairs per row, with ten sections per page in relative-BD order.
+atlas_theme <- spatial_theme + theme(
+  plot.title = element_text(hjust = 0.5, face = "bold", size = 11),
+  plot.subtitle = element_text(hjust = 0.5, size = 11),
+  legend.title = element_text(size = 12),
+  legend.text = element_text(size = 11)
+)
+page_rows <- split(seq_len(nrow(q9)), ceiling(seq_len(nrow(q9)) / 10))
 all_section_pages <- lapply(seq_along(page_rows), function(page_i) {
   rows <- page_rows[[page_i]]
   page_plots <- unlist(lapply(rows, function(i) {
@@ -131,37 +137,47 @@ all_section_pages <- lapply(seq_along(page_rows), function(page_i) {
     spot_sub$author_label <- factor(spot_sub$author_label, region_levels)
     list(
       ggplot(spot_sub, aes(x, y, color = author_label)) +
-        geom_point(size = 0.65) +
-        scale_color_manual(values = region_palette, drop = FALSE) +
-        scale_y_reverse() + coord_fixed() +
-        labs(
-          title = "Regions",
-          subtitle = sprintf(
-            "%s; rBD = %.3f", result$section_id,
-            result$relative_boundary_density
-          ),
-          color = "Published region"
-        ) + spatial_theme,
-      ggplot(spot_sub, aes(x, y, color = local_boundary_density)) +
-        geom_point(size = 0.65) +
-        scale_color_gradientn(
-          colors = c("grey95", "#FDB863", "#B2182B"), limits = c(0, 1)
+        geom_point(size = 0.65, show.legend = TRUE) +
+        scale_color_manual(
+          values = region_palette, limits = region_levels, drop = FALSE,
+          guide = if (i == rows[1]) guide_legend(nrow = 1) else "none"
         ) +
         scale_y_reverse() + coord_fixed() +
         labs(
-          title = "Local BD", subtitle = "k = 6", color = "Local BD"
-        ) + spatial_theme
+          title = as.character(result$section_id),
+          subtitle = sprintf(
+            "Regions; rBD = %.3f", result$relative_boundary_density
+          ),
+          color = "Published region"
+        ) + atlas_theme,
+      ggplot(spot_sub, aes(x, y, color = local_boundary_density)) +
+        geom_point(size = 0.65) +
+        scale_color_gradientn(
+          colors = c("grey95", "#FDB863", "#B2182B"), limits = c(0, 1),
+          guide = if (i == rows[1]) guide_colorbar(
+            direction = "horizontal", title.position = "top",
+            barwidth = grid::unit(4.5, "cm")
+          ) else "none"
+        ) +
+        scale_y_reverse() + coord_fixed() +
+        labs(
+          title = "Local raw BD", subtitle = "k = 6", color = "Local raw BD"
+        ) + atlas_theme
     )
   }), recursive = FALSE)
-  wrap_plots(page_plots, ncol = 2, guides = "collect") +
+  wrap_plots(page_plots, ncol = 4, nrow = 5, guides = "collect") +
     plot_annotation(
       title = sprintf(
         "Miyoshi frontal-cortex sections ordered by relative BD (%d-%d of 39)",
         min(rows), max(rows)
+      ),
+      subtitle = "Read each row left to right: regions, local raw BD, then the next section",
+      theme = theme(
+        plot.title = element_text(hjust = 0.5, size = 16),
+        plot.subtitle = element_text(hjust = 0.5, size = 12)
       )
     ) &
-    theme(plot.title = element_text(hjust = 0.5, size = 14)) &
-    theme(legend.position = "bottom")
+    theme(legend.position = "bottom", legend.box = "vertical")
 })
 for (i in seq_along(all_section_pages)) {
   save_plot(
@@ -170,12 +186,12 @@ for (i in seq_along(all_section_pages)) {
       spatial_dir,
       sprintf("Miyoshi_cortical_region_BD_all_sections_page%02d", i)
     ),
-    8.2, 10.2
+    12, 13
   )
 }
 pdf(
   file.path(spatial_dir, "Miyoshi_cortical_region_BD_all_sections.pdf"),
-  width = 8.2, height = 10.2, onefile = TRUE
+  width = 12, height = 13, onefile = TRUE
 )
 invisible(lapply(all_section_pages, print))
 dev.off()

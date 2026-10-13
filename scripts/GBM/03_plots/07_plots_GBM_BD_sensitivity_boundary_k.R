@@ -272,13 +272,9 @@ save_plot(
 # Combined supplementary figure
 ################################################################################
 
-sample_level_bd_panel <- plot_spacer() + sample_level_bd_plot + plot_spacer() +
-  plot_layout(widths = c(0.12, 1, 0.12))
-
 boundary_k_figure <- wrap_elements(local_maps_plot) /
-  raw_bd_boundary_k_plot /
-  sample_level_bd_panel +
-  plot_layout(heights = c(1.15, 1, 1.2)) +
+  sample_level_bd_plot +
+  plot_layout(heights = c(1, 1.5)) +
   plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(face = "bold", size = 12))
 
@@ -286,5 +282,5 @@ save_plot(
   boundary_k_figure,
   file.path(figure_dir, "GBM_supp_sensitivity_boundary_k"),
   width = 10.5,
-  height = 10.6
+  height = 8.2
 )
