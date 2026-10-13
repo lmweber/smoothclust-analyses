@@ -25,7 +25,7 @@ save_plot <- function(plot, filename, width, height) {
   ggsave(paste0(filename, ".pdf"), plot, width = width, height = height,
          bg = "white")
 }
-theme_set(theme_bw(base_size = 11))
+theme_set(theme_bw(base_size = 14))
 
 # Order donor rows with the 0 um pair before the 300 um pair.
 bd <- bd[order(bd$patient_id, bd$position_um, bd$adjacent_replicate), ]
@@ -76,10 +76,10 @@ layer_palette <- setNames(
     "#91BFDB", "#4575B4", "#595959"),
   layer_levels
 )
-spatial_theme <- theme_void(base_size = 9) +
+spatial_theme <- theme_void(base_size = 12) +
   theme(
-    plot.title = element_text(hjust = 0.5, face = "bold", size = 9),
-    plot.subtitle = element_text(hjust = 0.5, size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 12),
+    plot.subtitle = element_text(hjust = 0.5, size = 10),
     legend.position = "bottom"
   )
 section_ids <- as.character(bd$section_id)

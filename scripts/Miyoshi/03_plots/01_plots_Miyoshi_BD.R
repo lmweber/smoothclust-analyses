@@ -28,7 +28,7 @@ save_plot <- function(plot, filename, width, height) {
   ggsave(paste0(filename, ".pdf"), plot, width = width, height = height,
          bg = "white")
 }
-theme_set(theme_bw(base_size = 11))
+theme_set(theme_bw(base_size = 14))
 
 region_levels <- c(
   "L1", "L2/3", "L3/4", "L3/4/5", "L5/6", "L6b", "WM1", "WM2", "WM3"
@@ -112,18 +112,18 @@ save_plot(
   6.5, 5.5
 )
 
-spatial_theme <- theme_void(base_size = 10) +
+spatial_theme <- theme_void(base_size = 13) +
   theme(
-    plot.title = element_text(hjust = 0.5, face = "bold", size = 9),
-    plot.subtitle = element_text(hjust = 0.5, size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 12),
+    plot.subtitle = element_text(hjust = 0.5, size = 10),
     legend.position = "bottom"
   )
 # Two section-pairs per row, with ten sections per page in relative-BD order.
 atlas_theme <- spatial_theme + theme(
-  plot.title = element_text(hjust = 0.5, face = "bold", size = 11),
-  plot.subtitle = element_text(hjust = 0.5, size = 11),
-  legend.title = element_text(size = 12),
-  legend.text = element_text(size = 11)
+  plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+  plot.subtitle = element_text(hjust = 0.5, size = 14),
+  legend.title = element_text(size = 15),
+  legend.text = element_text(size = 14)
 )
 page_rows <- split(seq_len(nrow(q9)), ceiling(seq_len(nrow(q9)) / 10))
 all_section_pages <- lapply(seq_along(page_rows), function(page_i) {
@@ -175,7 +175,7 @@ all_section_pages <- lapply(seq_along(page_rows), function(page_i) {
       subtitle = "Read each row left to right: regions, local raw BD, then the next section",
       theme = theme(
         plot.title = element_text(hjust = 0.5, size = 16),
-        plot.subtitle = element_text(hjust = 0.5, size = 12)
+        plot.subtitle = element_text(hjust = 0.5, size = 15)
       )
     ) &
     theme(legend.position = "bottom", legend.box = "vertical")

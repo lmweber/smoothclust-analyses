@@ -71,7 +71,7 @@ patient_palette <- c(
 )
 
 theme_set(
-  theme_bw(base_size = 11) +
+  theme_bw(base_size = 14) +
     theme(
       plot.title = element_text(hjust = 0.5),
       plot.subtitle = element_text(hjust = 0.5),
@@ -114,7 +114,7 @@ p_relative <- ggplot(
   ) +
   geom_text(
     data = bd[bd$dominant_niche_gt80, ],
-    aes(label = section_id), color = "black", size = 2.6,
+    aes(label = section_id), color = "black", size = 3.2,
     nudge_y = 0.025, show.legend = FALSE
   ) +
   scale_x_continuous(breaks = seq_along(group_levels), labels = group_labels) +
@@ -155,7 +155,7 @@ p_expected <- ggplot(
   ) +
   geom_text(
     data = bd[bd$dominant_niche_gt80, ],
-    aes(label = section_id), size = 2.6, color = "black",
+    aes(label = section_id), size = 3.2, color = "black",
     nudge_x = 0.015, nudge_y = 0.025, hjust = 0, show.legend = FALSE
   ) +
   scale_color_manual(values = setNames(group_palette, group_labels)) +
@@ -308,10 +308,10 @@ niche_palette <- setNames(
   grDevices::hcl.colors(length(niche_levels), palette = "Dark 3"),
   niche_levels
 )
-spatial_theme <- theme_void(base_size = 10) +
+spatial_theme <- theme_void(base_size = 13) +
   theme(
-    plot.title = element_text(hjust = 0.5, face = "bold", size = 10),
-    plot.subtitle = element_text(hjust = 0.5, size = 9)
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 13),
+    plot.subtitle = element_text(hjust = 0.5, size = 12)
   )
 
 spatial_plots <- vector("list", 2 * nrow(examples))

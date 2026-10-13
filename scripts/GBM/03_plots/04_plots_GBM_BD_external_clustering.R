@@ -148,7 +148,7 @@ bd_k_requested <- bd[!is.na(bd$n_clusters_requested), ]
 # common plot settings
 
 theme_set(
-  theme_bw(base_size = 11) +
+  theme_bw(base_size = 14) +
     theme(
       plot.title = element_text(hjust = 0.5),
       plot.subtitle = element_text(hjust = 0.5)
@@ -404,10 +404,10 @@ for (method in external_methods) {
     ) +
     theme(
       legend.position = "right",
-      plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-      plot.subtitle = element_text(size = 7.5, hjust = 0.5),
-      legend.title = element_text(size = 8),
-      legend.text = element_text(size = 7)
+      plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
+      plot.subtitle = element_text(size = 9.5, hjust = 0.5),
+      legend.title = element_text(size = 10),
+      legend.text = element_text(size = 9)
     )
   
   external_local_plots[[method]] <- plotCoords(
@@ -423,10 +423,10 @@ for (method in external_methods) {
     ) +
     theme(
       legend.position = "right",
-      plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-      plot.subtitle = element_text(size = 7.5, hjust = 0.5),
-      legend.title = element_text(size = 8),
-      legend.text = element_text(size = 7)
+      plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
+      plot.subtitle = element_text(size = 9.5, hjust = 0.5),
+      legend.title = element_text(size = 10),
+      legend.text = element_text(size = 9)
     )
   
   save_plot(
@@ -455,7 +455,7 @@ external_maps_figure <- (
     wrap_plots(external_local_plots, nrow = 1)
 ) +
   plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(face = "bold", size = 12))
+  theme(plot.tag = element_text(face = "bold", size = 15))
 
 save_plot(
   external_maps_figure,

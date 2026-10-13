@@ -95,10 +95,10 @@ make_spatial_plot <- function(spe_map, map_row, smoothing_level) {
     ) +
     theme(
       legend.position = "right",
-      plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-      plot.subtitle = element_text(size = 8, hjust = 0.5),
-      legend.title = element_text(size = 8),
-      legend.text = element_text(size = 7)
+      plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
+      plot.subtitle = element_text(size = 10, hjust = 0.5),
+      legend.title = element_text(size = 10),
+      legend.text = element_text(size = 9)
     )
 }
 
@@ -164,7 +164,7 @@ rank_stability$n_clusters_factor <- factor(
 # common plot settings
 
 theme_set(
-  theme_bw(base_size = 10) +
+  theme_bw(base_size = 13) +
     theme(
       plot.title = element_text(hjust = 0.5),
       plot.subtitle = element_text(hjust = 0.5)
@@ -279,8 +279,8 @@ dose_response_plot <- ggplot(
     subtitle = paste0("K = ", dose_response_n_clusters)
   ) +
   theme(
-    strip.text = element_text(size = 9),
-    plot.subtitle = element_text(size = 9)
+    strip.text = element_text(size = 11.5),
+    plot.subtitle = element_text(size = 11.5)
   )
 
 save_plot(
@@ -327,7 +327,7 @@ rank_stability_plot <- ggplot(
   theme(
     panel.grid = element_blank(),
     axis.text.x = element_text(angle = 35, hjust = 1),
-    strip.text = element_text(size = 9)
+    strip.text = element_text(size = 11.5)
   )
 
 save_plot(
@@ -347,7 +347,7 @@ smoothing_parameter_figure <- wrap_elements(spatial_maps_plot) /
   rank_stability_plot +
   plot_layout(heights = c(1.35, 1, 1)) +
   plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(face = "bold", size = 12))
+  theme(plot.tag = element_text(face = "bold", size = 15))
 
 save_plot(
   smoothing_parameter_figure,

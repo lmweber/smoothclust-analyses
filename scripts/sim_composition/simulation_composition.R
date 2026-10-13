@@ -145,12 +145,12 @@ write.csv(
 # Figure: random-label reference, organization, and composition adjustment.
 label_palette <- c(A = "#0072B2", B = "#E69F00")
 theme_set(
-  theme_bw(base_size = 9) +
+  theme_bw(base_size = 12) +
     theme(
-      plot.title = element_text(face = "bold", size = 9, hjust = 0.5),
-      axis.title = element_text(size = 8),
-      axis.text = element_text(size = 7),
-      strip.text = element_text(size = 8)
+      plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
+      axis.title = element_text(size = 10),
+      axis.text = element_text(size = 9),
+      strip.text = element_text(size = 10)
     )
 )
 
@@ -175,10 +175,10 @@ map_plots <- lapply(seq_along(organization_labels), function(i) {
         result$boundary_density, result$relative_boundary_density
       )
     ) +
-    theme_void(base_size = 9) +
+    theme_void(base_size = 12) +
     theme(
-      plot.title = element_text(face = "bold", size = 9, hjust = 0.5),
-      plot.subtitle = element_text(size = 7.5, hjust = 0.5)
+      plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
+      plot.subtitle = element_text(size = 9.5, hjust = 0.5)
     )
 })
 maps_plot <- wrap_plots(map_plots, nrow = 1)
@@ -268,10 +268,10 @@ interface_plots <- lapply(seq_along(interface_labels), function(i) {
         result$relative_boundary_density
       )
     ) +
-    theme_void(base_size = 9) +
+    theme_void(base_size = 12) +
     theme(
-      plot.title = element_text(face = "bold", size = 9, hjust = 0.5),
-      plot.subtitle = element_text(size = 7.5, hjust = 0.5)
+      plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
+      plot.subtitle = element_text(size = 9.5, hjust = 0.5)
     )
 })
 interface_plot <- wrap_plots(interface_plots, nrow = 1)

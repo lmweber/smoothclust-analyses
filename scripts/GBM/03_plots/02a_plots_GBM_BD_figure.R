@@ -78,10 +78,13 @@ bd_wide$sample_id <- factor(bd_wide$sample_id, levels = rev(sample_order))
 # plot settings
 
 theme_set(
-  theme_bw(base_size = 9) +
+  theme_bw(base_size = 12) +
     theme(
       plot.title = element_text(hjust = 0.5),
-      plot.subtitle = element_text(hjust = 0.5)
+      plot.subtitle = element_text(hjust = 0.5),
+      axis.text = element_text(size = 10),
+      legend.title = element_text(size = 10),
+      legend.text = element_text(size = 9)
     )
 )
 
@@ -126,10 +129,10 @@ p_smooth_domains <- plotCoords(
   ) +
   theme(
     legend.position = "right",
-    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-    plot.subtitle = element_text(size = 8, hjust = 0.5),
-    legend.title = element_text(size = 8),
-    legend.text = element_text(size = 7)
+    plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
+    plot.subtitle = element_text(size = 10, hjust = 0.5),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 9)
   )
 
 p_local_bd <- plotCoords(
@@ -145,10 +148,10 @@ p_local_bd <- plotCoords(
   ) +
   theme(
     legend.position = "right",
-    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-    plot.subtitle = element_text(size = 8, hjust = 0.5),
-    legend.title = element_text(size = 8),
-    legend.text = element_text(size = 7)
+    plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
+    plot.subtitle = element_text(size = 10, hjust = 0.5),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 9)
   )
 
 p_baseline_domains <- plotCoords(
@@ -165,10 +168,10 @@ p_baseline_domains <- plotCoords(
   ) +
   theme(
     legend.position = "right",
-    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-    plot.subtitle = element_text(size = 8, hjust = 0.5),
-    legend.title = element_text(size = 8),
-    legend.text = element_text(size = 7)
+    plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
+    plot.subtitle = element_text(size = 10, hjust = 0.5),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 9)
   )
 
 
@@ -208,7 +211,7 @@ p_scatter <- ggplot(
     y = "Unsmoothed k-means BD"
   ) +
   theme(
-    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
+    plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
     legend.position = "right"
   )
 
@@ -232,7 +235,7 @@ p_difference <- ggplot(
     x = "Number of clusters",
     y = "Unsmoothed - smoothclust BD"
   ) +
-  theme(plot.title = element_text(face = "bold", size = 10, hjust = 0.5))
+  theme(plot.title = element_text(face = "bold", size = 13, hjust = 0.5))
 
 p_heatmap <- ggplot(
   bd_smooth,
@@ -257,8 +260,8 @@ p_heatmap <- ggplot(
   ) +
   theme(
     panel.grid = element_blank(),
-    plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-    axis.text.y = element_text(size = 6.5),
+    plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
+    axis.text.y = element_text(size = 8.5),
     legend.position = "right"
   )
 
@@ -273,7 +276,7 @@ fig <- (
     plot_layout(ncol = 3, widths = c(1, 1, 1.05))
 ) +
   plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(face = "bold", size = 12))
+  theme(plot.tag = element_text(face = "bold", size = 15))
 
 png_file <- file.path(figure_dir, "GBM_BD_figure_zh1019t1.png")
 pdf_file <- file.path(figure_dir, "GBM_BD_figure_zh1019t1.pdf")

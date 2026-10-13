@@ -157,7 +157,7 @@ p_core <- ggplot(runtime, aes(x = workflow_label, y = seconds, fill = stage)) +
     title = "Core smoothclust workflow components",
     subtitle = "Descriptive timings; workloads, requested threads, and fitting scope differ"
   ) +
-  theme_bw(base_size = 10) +
+  theme_bw(base_size = 13) +
   theme(
     legend.position = "top",
     panel.grid.major.y = element_blank(),
@@ -215,7 +215,7 @@ p_method <- ggplot(
   geom_point(size = 3, show.legend = FALSE) +
   geom_text(
     aes(label = runtime_display), colour = "black", vjust = -0.8,
-    size = 3.2, show.legend = FALSE
+    size = 4, show.legend = FALSE
   ) +
   scale_colour_manual(values = method_palette, drop = FALSE) +
   scale_y_log10(
@@ -227,7 +227,7 @@ p_method <- ggplot(
     subtitle = paste(gbm$n_samples_after_filter, "section workflows; method timings include BD"),
     x = NULL, y = "Elapsed time (seconds, log10 scale)"
   ) +
-  theme_bw(base_size = 10) +
+  theme_bw(base_size = 13) +
   theme(
     plot.title = element_text(face = "bold"),
     panel.grid.major.x = element_blank()
@@ -251,8 +251,8 @@ runtime_figure <- (p_core / p_method) +
       "Hardware: 2023 MacBook Pro, Apple M3 Max (14 cores), 36 GB memory."
     ),
     theme = theme(
-      plot.tag = element_text(face = "bold"),
-      plot.caption = element_text(size = 8, hjust = 0, lineheight = 1.1)
+      plot.tag = element_text(face = "bold", size = 15),
+      plot.caption = element_text(size = 10, hjust = 0, lineheight = 1.1)
     )
   )
 

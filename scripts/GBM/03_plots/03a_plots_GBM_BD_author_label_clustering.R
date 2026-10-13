@@ -127,7 +127,7 @@ ari_y_limits <- range(ari_y_breaks)
 # plot settings
 
 theme_set(
-  theme_bw(base_size = 10) +
+  theme_bw(base_size = 13) +
     theme(
       plot.title = element_text(hjust = 0.5),
       plot.subtitle = element_text(hjust = 0.5),
@@ -332,15 +332,15 @@ map_plot <- ggplot(map_df, aes(x = x, y = -y, color = label)) +
   facet_wrap(~ panel, nrow = 2) +
   scale_color_manual(values = map_palette) +
   labs(x = NULL, y = NULL, color = "Label") +
-  theme_void(base_size = 9) +
+  theme_void(base_size = 12) +
   theme(
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA),
     strip.background = element_rect(fill = "gray90", color = "gray45"),
-    strip.text = element_text(size = 8),
+    strip.text = element_text(size = 10),
     legend.position = "right",
-    legend.text = element_text(size = 6),
-    legend.key.height = grid::unit(0.3, "lines")
+    legend.text = element_text(size = 7.5),
+    legend.key.height = grid::unit(0.4, "lines")
   ) +
   guides(color = guide_legend(ncol = 1, override.aes = list(size = 2)))
 
@@ -369,7 +369,8 @@ s6_plot <- wrap_plots(
   heights = c(1.2, 1)
 ) +
   plot_layout(heights = c(1.2, 1)) +
-  plot_annotation(tag_levels = "A")
+  plot_annotation(tag_levels = "A") &
+  theme(plot.tag = element_text(face = "bold", size = 15))
 
 save_plot(
   s6_plot,

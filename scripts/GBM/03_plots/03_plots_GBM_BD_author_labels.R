@@ -117,7 +117,7 @@ sample_biology$sample_id <- factor(sample_biology$sample_id, levels = sample_lev
 # plot settings
 
 theme_set(
-  theme_bw(base_size = 10) +
+  theme_bw(base_size = 13) +
     theme(
       plot.title = element_text(hjust = 0.5),
       plot.subtitle = element_text(hjust = 0.5),
@@ -195,15 +195,15 @@ label_map_plot <- ggplot(label_map_df, aes(x = x, y = -y, color = label)) +
   facet_wrap(~ facet_label, nrow = 1) +
   scale_color_manual(values = map_palette) +
   labs(x = NULL, y = NULL, color = "Label") +
-  theme_void(base_size = 9) +
+  theme_void(base_size = 12) +
   theme(
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA),
     strip.background = element_rect(fill = "gray90", color = "gray45"),
-    strip.text = element_text(size = 8),
+    strip.text = element_text(size = 10),
     legend.position = "right",
-    legend.text = element_text(size = 6),
-    legend.key.height = grid::unit(0.3, "lines")
+    legend.text = element_text(size = 7.5),
+    legend.key.height = grid::unit(0.4, "lines")
   ) +
   guides(color = guide_legend(ncol = 1, override.aes = list(size = 2)))
 
@@ -219,12 +219,12 @@ local_map_plot <- ggplot(
     limits = c(0, 1)
   ) +
   labs(x = NULL, y = NULL, color = "Local BD") +
-  theme_void(base_size = 9) +
+  theme_void(base_size = 12) +
   theme(
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA),
     strip.background = element_rect(fill = "gray90", color = "gray45"),
-    strip.text = element_text(size = 8),
+    strip.text = element_text(size = 10),
     legend.position = "right"
   )
 
@@ -266,7 +266,7 @@ relative_bd_label_plot <- ggplot(
     data = raw_bd_medians,
     aes(x = author_label_display, y = 0.98, label = label),
     inherit.aes = FALSE,
-    size = 2.5,
+    size = 3.1,
     angle = 90,
     hjust = 1,
     color = "gray30"
@@ -332,7 +332,7 @@ structured_bd_plot <- ggplot(
     inherit.aes = FALSE,
     hjust = 0,
     vjust = 1,
-    size = 2.8,
+    size = 3.5,
     color = "gray25"
   ) +
   facet_wrap(~ author_label_display, nrow = 1) +
@@ -349,7 +349,7 @@ structured_bd_plot <- ggplot(
   ) +
   theme(
     legend.position = "right",
-    legend.text = element_text(size = 7)
+    legend.text = element_text(size = 9)
   )
 
 save_plot(
@@ -407,7 +407,8 @@ s5_plot <- wrap_plots(
   guides = "collect"
 ) +
   plot_layout(heights = c(1.35, 1), guides = "collect") +
-  plot_annotation(tag_levels = "A")
+  plot_annotation(tag_levels = "A") &
+  theme(plot.tag = element_text(face = "bold", size = 15))
 
 save_plot(
   s5_plot,

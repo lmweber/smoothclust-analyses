@@ -101,7 +101,7 @@ method_runtime_plot <- ggplot(
   geom_point(size = 3, show.legend = FALSE) +
   geom_text(
     aes(label = runtime_display),
-    colour = "black", vjust = -0.8, size = 3.2, show.legend = FALSE
+    colour = "black", vjust = -0.8, size = 4, show.legend = FALSE
   ) +
   scale_colour_manual(values = runtime_palette, drop = FALSE) +
   scale_y_log10(
@@ -114,7 +114,7 @@ method_runtime_plot <- ggplot(
     x = NULL,
     y = "Runtime (seconds, log10 scale)"
   ) +
-  theme_bw(base_size = 10) +
+  theme_bw(base_size = 13) +
   theme(
     plot.title = element_text(face = "bold", hjust = 0.5),
     plot.subtitle = element_text(hjust = 0.5),

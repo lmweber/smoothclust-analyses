@@ -36,12 +36,12 @@ xe <- readRDS(
   file.path(results_dir, "deOliveira_Xenium_spot_results.rds")
 )
 
-theme_spatial <- theme_void() +
+theme_spatial <- theme_void(base_size = 14) +
   theme(
-    plot.title = element_text(size = 11, face = "bold"),
-    plot.subtitle = element_text(size = 9),
-    legend.title = element_text(size = 9),
-    legend.text = element_text(size = 7)
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 9)
   )
 
 # Rasterize spatial layers to keep PDF files manageable.
@@ -83,7 +83,8 @@ hd_figure <- hd_author + hd_smooth + hd_local +
     subtitle = paste(
       "Author-cluster and smoothclust colors are independent;",
       "cluster numbers are not matched"
-    )
+    ),
+    theme = theme(text = element_text(size = 14))
   )
 
 xe_smooth <- ggplot(xe, aes(x = x, y = y, color = smoothclust_label)) +
@@ -107,7 +108,10 @@ xe_local <- ggplot(xe, aes(x = x, y = y, color = local_bd_smoothclust)) +
   theme_spatial
 
 xe_figure <- xe_smooth + xe_local +
-  plot_annotation(title = "de Oliveira P2CRC Xenium")
+  plot_annotation(
+    title = "de Oliveira P2CRC Xenium",
+    theme = theme(text = element_text(size = 14))
+  )
 
 save_plot(
   hd_figure,
@@ -155,7 +159,7 @@ table_cells <- data.frame(
   fontface = rep(c("bold", rep("plain", 3)), length(table_values))
 )
 bd_table <- ggplot(table_cells, aes(x = x, y = y, label = label)) +
-  geom_text(aes(hjust = hjust, fontface = fontface), size = 3.1) +
+  geom_text(aes(hjust = hjust, fontface = fontface), size = 3.9) +
   geom_hline(yintercept = c(3.5, 0.5), colour = "#B8C2CC", linewidth = 0.3) +
   scale_x_continuous(limits = c(0, 12), expand = c(0, 0)) +
   scale_y_continuous(limits = c(0.3, 4.7), expand = c(0, 0)) +
@@ -169,8 +173,8 @@ bd_table <- ggplot(table_cells, aes(x = x, y = y, label = label)) +
   ) +
   theme_void() +
   theme(
-    plot.title = element_text(size = 10, face = "bold"),
-    plot.caption = element_text(size = 8, hjust = 0),
+    plot.title = element_text(size = 13, face = "bold"),
+    plot.caption = element_text(size = 10, hjust = 0),
     plot.margin = margin(5.5, 5.5, 5.5, 5.5)
   )
 save_plot(
@@ -213,7 +217,7 @@ bd_figure <- ggplot(
     aes(x = x, y = y, label = label),
     inherit.aes = FALSE,
     vjust = 1,
-    size = 3.2
+    size = 4
   ) +
   facet_wrap(~analysis, nrow = 1) +
   scale_fill_manual(values = c("#3B82F6", "#B8C2CC")) +
@@ -226,7 +230,7 @@ bd_figure <- ggplot(
     ),
     x = NULL, y = "Boundary density", fill = NULL
   ) +
-  theme_bw(base_size = 10) +
+  theme_bw(base_size = 13) +
   theme(
     legend.position = "bottom",
     axis.text.x = element_text(angle = 20, hjust = 1),
@@ -257,7 +261,7 @@ p_runtime <- ggplot(runtime, aes(x = seconds, y = stage, fill = platform)) +
     subtitle = "Descriptive only; platform and location count differ",
     x = "Runtime in seconds (log1p scale)", y = NULL, fill = NULL
   ) +
-  theme_bw(base_size = 10) +
+  theme_bw(base_size = 13) +
   theme(legend.position = "top", plot.title = element_text(face = "bold"))
 
 save_plot(

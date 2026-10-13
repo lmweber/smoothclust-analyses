@@ -72,11 +72,17 @@ bd_wide$sample_id <- factor(bd_wide$sample_id, levels = sort(unique(bd_wide$samp
 # common plot settings
 
 theme_set(
-  theme_bw(base_size = 11) +
+  theme_bw(base_size = 14) +
     theme(
       plot.title = element_text(hjust = 0.5),
       plot.subtitle = element_text(hjust = 0.5)
     )
+)
+
+spatial_theme <- theme(
+  plot.title = element_text(size = 16, hjust = 0.5),
+  legend.title = element_text(size = 14),
+  legend.text = element_text(size = 11)
 )
 
 method_palette <- c(
@@ -287,7 +293,8 @@ for (label_col in label_cols) {
       point_size = 1.2
     ) +
       labs(color = "Cluster") +
-      ggtitle(paste(sample_id, label_col))
+      ggtitle(paste(sample_id, label_col, sep = "\n")) +
+      spatial_theme
     
     ggsave(
       file.path(cluster_plots_dir, paste0("GBM_baseline_cluster_map_", label_col, "_", sample_id, ".png")),
@@ -303,7 +310,8 @@ for (label_col in label_cols) {
       pal = local_bd_palette,
       point_size = 1.2
     ) +
-      ggtitle(paste(sample_id, local_col))
+      ggtitle(paste(sample_id, local_col, sep = "\n")) +
+      spatial_theme
     
     ggsave(
       file.path(local_bd_plots_dir, paste0("GBM_baseline_local_BD_map_", label_col, "_", sample_id, ".png")),

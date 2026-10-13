@@ -89,10 +89,10 @@ make_local_bd_plot <- function(spe_map, map_row) {
     ) +
     theme(
       legend.position = "right",
-      plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
-      plot.subtitle = element_text(size = 8, hjust = 0.5),
-      legend.title = element_text(size = 8),
-      legend.text = element_text(size = 7)
+      plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
+      plot.subtitle = element_text(size = 10, hjust = 0.5),
+      legend.title = element_text(size = 10),
+      legend.text = element_text(size = 9)
     )
 }
 
@@ -125,7 +125,7 @@ bd$n_clusters_factor <- factor(
 # common plot settings
 
 theme_set(
-  theme_bw(base_size = 10) +
+  theme_bw(base_size = 13) +
     theme(
       plot.title = element_text(hjust = 0.5),
       plot.subtitle = element_text(hjust = 0.5)
@@ -256,7 +256,7 @@ sample_level_bd_plot <- ggplot(
   ) +
   guides(fill = "none", color = "none") +
   theme(
-    strip.text = element_text(size = 9),
+    strip.text = element_text(size = 11.5),
     axis.text.x = element_text(angle = 35, hjust = 1)
   )
 
@@ -276,7 +276,7 @@ boundary_k_figure <- wrap_elements(local_maps_plot) /
   sample_level_bd_plot +
   plot_layout(heights = c(1, 1.5)) +
   plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(face = "bold", size = 12))
+  theme(plot.tag = element_text(face = "bold", size = 15))
 
 save_plot(
   boundary_k_figure,

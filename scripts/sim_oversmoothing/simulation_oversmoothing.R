@@ -157,10 +157,10 @@ write.csv(
 )
 
 domain_colors <- c(A = "#0072B2", B = "#D55E00", C = "#009E73")
-theme_map <- theme_void(base_size = 9) +
+theme_map <- theme_void(base_size = 12) +
   theme(
-    plot.title = element_text(face = "bold", size = 9.5),
-    plot.subtitle = element_text(size = 8),
+    plot.title = element_text(face = "bold", size = 12),
+    plot.subtitle = element_text(size = 10),
     legend.position = "bottom"
   )
 
@@ -224,7 +224,7 @@ p_recovery <- ggplot(
     x = "Smoothing bandwidth (% of section width)", y = "Recovery",
     color = NULL, shape = NULL
   ) +
-  theme_bw(base_size = 9) +
+  theme_bw(base_size = 12) +
   theme(legend.position = "top", plot.title = element_text(face = "bold"))
 
 p_raw <- ggplot(metrics, aes(100 * bandwidth, boundary_density)) +
@@ -240,7 +240,7 @@ p_raw <- ggplot(metrics, aes(100 * bandwidth, boundary_density)) +
     subtitle = "Dashed line: true labels",
     x = "Smoothing bandwidth (% of section width)", y = "Raw BD (log scale)"
   ) +
-  theme_bw(base_size = 9) +
+  theme_bw(base_size = 12) +
   theme(plot.title = element_text(face = "bold"))
 
 p_relative <- ggplot(metrics, aes(100 * bandwidth, relative_boundary_density)) +
@@ -258,7 +258,7 @@ p_relative <- ggplot(metrics, aes(100 * bandwidth, relative_boundary_density)) +
     x = "Smoothing bandwidth (% of section width)",
     y = "Relative BD (log scale)"
   ) +
-  theme_bw(base_size = 9) +
+  theme_bw(base_size = 12) +
   theme(plot.title = element_text(face = "bold"))
 
 figure <- (p_truth + wrap_plots(map_plots, nrow = 1) +
@@ -270,7 +270,12 @@ figure <- (p_truth + wrap_plots(map_plots, nrow = 1) +
       "Three-domain count simulation; fixed feature set, PCA dimensions,",
       "cluster number, and four-neighbor BD graph"
     ),
-    tag_levels = "A"
+    tag_levels = "A",
+    theme = theme(
+      plot.title = element_text(size = 15),
+      plot.subtitle = element_text(size = 12),
+      plot.tag = element_text(size = 15)
+    )
   )
 
 ggsave(

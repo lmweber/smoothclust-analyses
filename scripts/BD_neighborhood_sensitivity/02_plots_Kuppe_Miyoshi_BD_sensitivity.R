@@ -21,7 +21,7 @@ group_labels <- c(
   "Myogenic-enriched", "Ischaemic-enriched", "Fibrotic-enriched"
 )
 group_palette <- setNames(c("#0072B2", "#D55E00", "#009E73"), group_levels)
-theme_set(theme_bw(base_size = 11))
+theme_set(theme_bw(base_size = 14))
 panels <- list()
 omission_notes <- character()
 
@@ -101,7 +101,7 @@ if (length(omission_notes)) {
     caption, "Undefined relative BD:", paste(omission_notes, collapse = "; ")
   )
 }
-caption_lines <- strwrap(caption, width = 120)
+caption_lines <- strwrap(caption, width = 95)
 caption <- paste(caption_lines, collapse = "\n")
 figure <- wrap_plots(panels, ncol = 2, guides = "collect") +
   plot_annotation(
@@ -112,7 +112,7 @@ figure <- wrap_plots(panels, ncol = 2, guides = "collect") +
 
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 figure_path <- file.path(plot_dir, "Kuppe_Miyoshi_BD_k_sensitivity")
-figure_height <- 9 + 0.13 * (length(caption_lines) - 1)
+figure_height <- 9 + 0.16 * (length(caption_lines) - 1)
 ggsave(paste0(figure_path, ".pdf"), figure, width = 10, height = figure_height,
        bg = "white")
 ggsave(paste0(figure_path, ".png"), figure, width = 10, height = figure_height,

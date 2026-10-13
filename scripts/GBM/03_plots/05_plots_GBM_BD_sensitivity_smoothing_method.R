@@ -90,7 +90,7 @@ ari$sample_id <- factor(ari$sample_id, levels = levels(bd$sample_id))
 # common plot settings
 
 theme_set(
-  theme_bw(base_size = 10) +
+  theme_bw(base_size = 13) +
     theme(
       plot.title = element_text(hjust = 0.5),
       plot.subtitle = element_text(hjust = 0.5)
@@ -222,7 +222,7 @@ save_plot(
 
 smoothing_method_figure <- raw_bd_plot / ari_pairwise_plot +
   plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(face = "bold", size = 12))
+  theme(plot.tag = element_text(face = "bold", size = 15))
 
 save_plot(
   smoothing_method_figure,

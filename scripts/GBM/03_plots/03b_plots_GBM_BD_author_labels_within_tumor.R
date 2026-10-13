@@ -189,9 +189,9 @@ composition$metaprogram <- factor(composition$metaprogram, levels = mp_levels)
 # plot settings
 
 theme_set(
-  theme_bw(base_size = 9) +
+  theme_bw(base_size = 12) +
     theme(
-      plot.title = element_text(hjust = 0.5, face = "bold", size = 10),
+      plot.title = element_text(hjust = 0.5, face = "bold", size = 13),
       plot.subtitle = element_text(hjust = 0.5),
       strip.background = element_rect(fill = "gray90", color = "gray45")
     )
@@ -260,15 +260,15 @@ map_df <- do.call(
 
 map_df$map_facet <- factor(map_df$map_facet, levels = map_facet_levels)
 map_df$metaprogram <- factor(map_df$metaprogram, levels = mp_levels)
-map_theme <- theme_void(base_size = 8.5) +
+map_theme <- theme_void(base_size = 11) +
   theme(
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA),
-    plot.title = element_text(face = "bold", size = 9.5, hjust = 0.5),
+    plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
     strip.background = element_rect(fill = "gray90", color = "gray45"),
-    strip.text = element_text(size = 8),
+    strip.text = element_text(size = 10),
     legend.position = "right",
-    legend.title = element_text(size = 8)
+    legend.title = element_text(size = 10)
   )
 map_base <- ggplot(map_df, aes(x = x, y = y)) +
   geom_point(color = "gray90", size = 0.4) +
@@ -292,7 +292,7 @@ mp_map_plot <- map_base +
     color = "Dominant metaprogram"
   ) +
   theme(
-    legend.text = element_text(size = 6.5),
+    legend.text = element_text(size = 8.5),
     legend.key.height = grid::unit(0.7, "lines")
   ) +
   guides(
@@ -324,7 +324,7 @@ local_bd_map_plot <- map_base +
     y = NULL,
     color = "Local BD"
   ) +
-  theme(legend.text = element_text(size = 7))
+  theme(legend.text = element_text(size = 9))
 
 map_pair_plot <- mp_map_plot / local_bd_map_plot +
   plot_layout(heights = c(1, 1))
@@ -476,7 +476,7 @@ zh881_context_plot <- ggplot(
   geom_tile(color = "white", linewidth = 0.7) +
   geom_text(
     aes(label = percent_label, color = text_color),
-    size = 2.8,
+    size = 3.5,
     show.legend = FALSE
   ) +
   scale_fill_gradient(
@@ -488,7 +488,7 @@ zh881_context_plot <- ggplot(
   ) +
   scale_color_identity() +
   labs(x = "Section", y = NULL) +
-  theme_minimal(base_size = 8.5) +
+  theme_minimal(base_size = 11) +
   theme(
     panel.grid = element_blank(),
     axis.text.x = element_text(angle = 30, hjust = 1),
@@ -637,7 +637,7 @@ within_tumor_supp_plot <- wrap_plots(
   plot_annotation(
     tag_levels = "A",
     theme = theme(
-      plot.tag = element_text(face = "bold", size = 13),
+      plot.tag = element_text(face = "bold", size = 16),
       plot.tag.position = c(0.005, 0.995)
     )
   )
