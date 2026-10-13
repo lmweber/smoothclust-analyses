@@ -20,6 +20,7 @@ figures <- c(
   "plots/Kuppe/spatial_maps/Kuppe_celltype_niche_example_spatial_maps.pdf",
   "plots/Kuppe/summary_plots/Kuppe_celltype_niche_composition_by_section.pdf",
   # Miyoshi
+  "plots/Miyoshi/summary_plots/Miyoshi_annotation_definition_BD_figure.pdf",
   "plots/Miyoshi/summary_plots/Miyoshi_BD_ranked_sections.pdf",
   "plots/Miyoshi/spatial_maps/Miyoshi_q9_vs_WM_collapsed_map.pdf",
   "plots/Miyoshi/summary_plots/Miyoshi_BD_q9_vs_WM_collapsed.pdf",
