@@ -228,7 +228,7 @@ for (sample_id in sample_ids) {
       spatialCoords(spe_sub),
       author_labels,
       k = boundary_k,
-      adjust = "analytic"
+      adjust = TRUE
     )
     
     local_values <- rep(NA_real_, ncol(spe))

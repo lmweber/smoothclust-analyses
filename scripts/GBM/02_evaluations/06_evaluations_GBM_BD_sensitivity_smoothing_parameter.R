@@ -313,7 +313,7 @@ for (sample_id in sample_ids) {
         labels,
         k = boundary_k,
         n_threads = parallel_threads,
-        adjust = "analytic"
+        adjust = TRUE
       )
       
       colData(spe_out)[[label_col]] <- labels

@@ -81,7 +81,7 @@ small_domain_f1 <- function(clusters, truth) {
 }
 
 truth_bd <- boundary_density(
-  coords, truth, k = boundary_k, adjust = "analytic"
+  coords, truth, k = boundary_k, adjust = TRUE
 )
 metrics <- vector("list", length(bandwidths))
 map_data <- vector("list", length(bandwidths))
@@ -112,7 +112,7 @@ for (i in seq_along(bandwidths)) {
   )$cluster
   inferred <- align_clusters(clusters, truth)
   bd <- boundary_density(
-    coords, clusters, k = boundary_k, adjust = "analytic"
+    coords, clusters, k = boundary_k, adjust = TRUE
   )
 
   metrics[[i]] <- data.frame(

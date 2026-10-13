@@ -176,7 +176,7 @@ for (sample_id in sample_ids) {
       colData(spe_sub)[[label_col]],
       k = boundary_k,
       n_threads = parallel_threads,
-      adjust = "analytic"
+      adjust = TRUE
     )
     
     colData(spe_sub)[[local_col]] <- bd$local_boundary_density

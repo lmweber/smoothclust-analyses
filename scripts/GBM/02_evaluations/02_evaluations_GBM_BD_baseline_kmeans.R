@@ -140,7 +140,7 @@ for (sample_id in sample_ids) {
       spatialCoords(spe_sub),
       colData(spe_sub)[[label_col]],
       k = boundary_k,
-      adjust = "analytic"
+      adjust = TRUE
     )
     
     colData(spe_sub)[[local_col]] <- bd$local_boundary_density

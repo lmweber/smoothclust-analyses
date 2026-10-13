@@ -131,7 +131,7 @@ for (dataset_i in seq_len(nrow(datasets))) {
       # Baseline checks expose differences in ties across package environments.
       # findKNN excludes the focal location; do not truncate a maximum-k graph.
       bd <- boundary_density(coords, labels, k = boundary_k,
-                             n_threads = n_threads, adjust = "analytic")
+                             n_threads = n_threads, adjust = TRUE)
       if (boundary_k == 6L) {
         for (metric in metrics) {
           if (!same_values(bd[[metric]], old_summary[[metric]])) {

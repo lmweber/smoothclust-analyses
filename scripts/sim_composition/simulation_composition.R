@@ -25,7 +25,7 @@ n_spots <- nrow(coords)
 evaluate_labels <- function(labels, simulation, state, replicate, label_seed) {
   bd <- boundary_density(
     coords, labels, k = boundary_k, n_threads = n_threads,
-    adjust = "analytic"
+    adjust = TRUE
   )
   counts <- table(factor(labels, levels = c("A", "B")))
   data.frame(

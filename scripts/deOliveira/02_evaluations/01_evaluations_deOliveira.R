@@ -104,7 +104,7 @@ for (platform_id in names(settings)) {
     smooth_labels,
     k = cfg$boundary_k,
     n_threads = n_threads,
-    adjust = "analytic"
+    adjust = TRUE
   )
   smooth_bd_seconds <- elapsed(stage_start)
 
@@ -117,7 +117,7 @@ for (platform_id in names(settings)) {
       colData(spe)$author_cluster,
       k = cfg$boundary_k,
       n_threads = n_threads,
-      adjust = "analytic"
+      adjust = TRUE
     )
     author_bd_seconds <- elapsed(stage_start)
   }

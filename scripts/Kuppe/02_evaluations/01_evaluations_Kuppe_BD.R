@@ -36,7 +36,7 @@ for (i in seq_along(section_ids)) {
     labels[keep],
     k = boundary_k,
     n_threads = n_threads,
-    adjust = "analytic"
+    adjust = TRUE
   )
 
   local_ix <- which(section_ix)[keep]

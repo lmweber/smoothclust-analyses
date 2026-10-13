@@ -33,7 +33,7 @@ for (scheme in schemes) {
     bd <- boundary_density(
       as.matrix(spots[section_ix, c("x", "y")])[keep, , drop = FALSE],
       labels[keep], k = boundary_k, n_threads = n_threads,
-      adjust = "analytic"
+      adjust = TRUE
     )
     label_counts <- table(labels[keep])
     section_metadata <- spots[which(section_ix)[1], ]
