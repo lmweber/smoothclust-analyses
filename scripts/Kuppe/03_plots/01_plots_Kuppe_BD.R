@@ -325,9 +325,10 @@ for (i in seq_len(nrow(examples))) {
   niche_plot <- ggplot(
     spot_sub, aes(x = x, y = y, color = author_celltype_niche)
   ) +
-    geom_point(size = 1.15) +
+    geom_point(size = 1.15, show.legend = TRUE) +
     scale_color_manual(
-      values = niche_palette, drop = FALSE, labels = paste("Niche", 1:9)
+      values = niche_palette, limits = niche_levels, drop = FALSE,
+      labels = paste("Niche", 1:9)
     ) +
     scale_y_reverse() +
     coord_fixed() +

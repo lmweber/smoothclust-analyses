@@ -279,28 +279,27 @@ map_base <- ggplot(map_df, aes(x = x, y = y)) +
 mp_map_plot <- map_base +
   geom_point(
     data = map_df[!is.na(map_df$metaprogram), , drop = FALSE],
-    aes(fill = metaprogram),
-    shape = 21,
-    colour = NA,
+    aes(color = metaprogram),
+    shape = 16,
     size = 0.52,
-    stroke = 0
+    show.legend = TRUE
   ) +
-  scale_fill_manual(values = mp_palette, drop = FALSE) +
+  scale_color_manual(values = mp_palette, limits = mp_levels, drop = FALSE) +
   labs(
     title = "Dominant metaprogram maps",
     x = NULL,
     y = NULL,
-    fill = "Dominant metaprogram"
+    color = "Dominant metaprogram"
   ) +
   theme(
     legend.text = element_text(size = 6.5),
     legend.key.height = grid::unit(0.7, "lines")
   ) +
   guides(
-    fill = guide_legend(
+    color = guide_legend(
       ncol = 2,
       byrow = TRUE,
-      override.aes = list(size = 2.5, stroke = 0)
+      override.aes = list(size = 2.5)
     )
   )
 

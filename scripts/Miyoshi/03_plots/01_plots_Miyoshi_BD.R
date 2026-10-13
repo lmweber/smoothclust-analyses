@@ -144,7 +144,8 @@ all_section_pages <- lapply(seq_along(page_rows), function(page_i) {
         ) +
         scale_y_reverse() + coord_fixed() +
         labs(
-          title = as.character(result$section_id),
+          title = sub("_2021_", "_2021_\n", as.character(result$section_id),
+                      fixed = TRUE),
           subtitle = sprintf(
             "Regions; rBD = %.3f", result$relative_boundary_density
           ),
