@@ -1,5 +1,5 @@
 ################################################################################
-# Plot section-level summaries of the Miyoshi et al. annotations
+# Plot the Miyoshi cohort overview and complete annotation/local-BD atlas
 ################################################################################
 
 # Run from the smoothclust-analyses repository root directory.
@@ -37,7 +37,7 @@ region_palette <- setNames(
   grDevices::hcl.colors(length(region_levels), "Spectral"), region_levels
 )
 
-# Reuse the nine-region relative-BD order across section-level plots.
+# Use the nine-region relative-BD order for the overview and atlas.
 q9 <- bd[bd$label_scheme == "author_cortical_region", ]
 q9 <- q9[order(q9$relative_boundary_density), ]
 section_levels <- q9$section_id
@@ -84,44 +84,11 @@ save_plot(
   12, 8
 )
 
-paired <- bd[, c(
-  "section_id", "label_scheme", "relative_boundary_density"
-)]
-paired$label_scheme <- factor(
-  paired$label_scheme,
-  c("author_cortical_region", "author_network_region"),
-  c("Nine published regions", "WM1-WM3 collapsed")
-)
-p_paired <- ggplot(
-  paired,
-  aes(label_scheme, relative_boundary_density, group = section_id)
-) +
-  geom_line(color = "grey72", linewidth = 0.4) +
-  geom_point(aes(color = label_scheme), size = 2.1) +
-  scale_color_manual(values = c("#0072B2", "#D55E00")) +
-  labs(
-    title = "Boundary density depends on the annotation map",
-    subtitle = "Lines connect the two summaries for each of 39 sections",
-    x = NULL, y = "Relative boundary density"
-  ) +
-  guides(color = "none") +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5))
-save_plot(
-  p_paired, file.path(summary_dir, "Miyoshi_BD_q9_vs_WM_collapsed"),
-  6.5, 5.5
-)
-
-spatial_theme <- theme_void(base_size = 13) +
-  theme(
-    plot.title = element_text(hjust = 0.5, face = "bold", size = 12),
-    plot.subtitle = element_text(hjust = 0.5, size = 10),
-    legend.position = "bottom"
-  )
 # Two section-pairs per row, with ten sections per page in relative-BD order.
-atlas_theme <- spatial_theme + theme(
+atlas_theme <- theme_void(base_size = 13) + theme(
   plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
   plot.subtitle = element_text(hjust = 0.5, size = 14),
+  legend.position = "bottom",
   legend.title = element_text(size = 15),
   legend.text = element_text(size = 14)
 )
@@ -196,30 +163,3 @@ pdf(
 )
 invisible(lapply(all_section_pages, print))
 dev.off()
-
-# Compare both label schemes in the median section of the nine-region ordering.
-median_id <- as.character(q9$section_id[ceiling(nrow(q9) / 2)])
-map_spots <- spots[spots$section_id == median_id, ]
-map_spots$label_scheme <- factor(
-  map_spots$label_scheme,
-  c("author_cortical_region", "author_network_region"),
-  c("Nine published regions", "WM1-WM3 collapsed")
-)
-map_levels <- c(region_levels, "WM")
-map_palette <- c(region_palette, WM = "#5B5B5B")
-map_spots$author_label <- factor(map_spots$author_label, map_levels)
-p_maps <- ggplot(map_spots, aes(x, y, color = author_label)) +
-  geom_point(size = 0.8) +
-  scale_color_manual(values = map_palette, drop = FALSE) +
-  scale_y_reverse() + coord_fixed() +
-  facet_wrap(~label_scheme) +
-  labs(
-    title = paste("Annotation-map comparison:", median_id),
-    color = "Published region"
-  ) +
-  spatial_theme
-save_plot(
-  p_maps,
-  file.path(spatial_dir, "Miyoshi_q9_vs_WM_collapsed_map"),
-  10, 5.5
-)
