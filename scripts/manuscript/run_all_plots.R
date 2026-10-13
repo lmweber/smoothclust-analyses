@@ -22,6 +22,7 @@ source("scripts/Kuppe/03_plots/01_plots_Kuppe_BD.R")
 
 # Miyoshi
 source("scripts/Miyoshi/03_plots/01_plots_Miyoshi_BD.R")
+source("scripts/Miyoshi/03_plots/02_plots_Miyoshi_annotation_definition_BD.R")
 
 # Maynard
 source("scripts/Maynard/03_plots/01_plots_Maynard_BD.R")
