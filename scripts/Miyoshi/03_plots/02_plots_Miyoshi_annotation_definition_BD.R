@@ -112,8 +112,7 @@ map_spots$author_label <- factor(map_spots$author_label, names(map_palette))
 bd$condition <- factor(bd$label_scheme, schemes, c("Nine regions", "WM merged"))
 
 spatial_theme <- theme_void(base_size = 13) + theme(
-  plot.title = element_text(hjust = 0.5, size = 12),
-  legend.position = "bottom"
+  legend.position = "bottom", legend.box = "vertical"
 )
 spatial_map <- function(scheme, local_bd = FALSE) {
   data <- map_spots[map_spots$label_scheme == scheme, ]
@@ -125,24 +124,45 @@ spatial_map <- function(scheme, local_bd = FALSE) {
     p + geom_point(aes(color = local_boundary_density), size = 0.8) +
       scale_color_gradientn(
         colors = c("grey95", "#FDB863", "#B2182B"), limits = c(0, 1),
-        name = "Local raw BD", na.value = "grey85",
-        guide = guide_colorbar(direction = "horizontal", title.position = "top",
-                               barwidth = grid::unit(5, "cm"), order = 2)
-      ) + labs(title = "Local raw BD")
+        name = NULL, na.value = "grey85",
+        guide = guide_colorbar(direction = "vertical",
+                               barheight = grid::unit(3, "cm"),
+                               barwidth = grid::unit(0.35, "cm"), order = 2)
+      ) + theme(legend.position = "right")
   } else {
     p + geom_point(aes(color = author_label), size = 0.8) +
       scale_color_manual(
-        values = map_palette, limits = names(map_palette), drop = FALSE,
+        values = map_palette, drop = TRUE,
         name = "Region", na.value = "grey85",
-        guide = guide_legend(nrow = 2, byrow = TRUE, order = 1)
-      ) + labs(title = "Labels")
+        guide = guide_legend(
+          nrow = 2, byrow = TRUE, title.position = "top",
+          override.aes = list(size = 3), order = 1
+        )
+      ) + theme(
+        legend.title = element_text(hjust = 0.5, margin = margin(t = 8, b = 5)),
+        legend.text = element_text(hjust = 0.5)
+      )
   }
 }
-pair_heading <- function(letter, title) {
+plot_heading <- function(title, size = 4.2, hjust = 0.5, fontface = "plain") {
   ggplot() +
-    annotate("text", x = 0, y = 0, label = paste(letter, title, sep = "  "),
-             hjust = 0, fontface = "bold", size = 5.5) +
-    xlim(0, 1) + ylim(-1, 1) + theme_void()
+    annotate("text", x = hjust, y = 0, label = title,
+             hjust = hjust, fontface = fontface, size = size) +
+    xlim(0, 1) + ylim(-1, 1) + theme_void() +
+    theme(plot.margin = margin(0, 5.5, 0, 5.5))
+}
+map_pair <- function(scheme, letter, title) {
+  # Align subtitles in one row; keep the BD scale beside its map and Region below.
+  wrap_plots(
+    A = plot_heading(paste(letter, title, sep = "  "),
+                     size = 5.5, hjust = 0, fontface = "bold"),
+    B = plot_heading("Labels"), C = plot_heading("Local raw BD"),
+    D = spatial_map(scheme),
+    E = wrap_plots(spatial_map(scheme, TRUE), guides = "keep"),
+    F = guide_area(),
+    design = "AA\nBC\nDE\nFF", heights = c(0.4, 0.25, 2.25, 0.8),
+    guides = "collect"
+  )
 }
 paired_plot <- function(metric, title, letter) {
   ggplot(bd, aes(condition, .data[[metric]], group = section_id)) +
@@ -155,27 +175,25 @@ paired_plot <- function(metric, title, letter) {
           plot.tag.position = "topleft", panel.grid.minor = element_blank())
 }
 
-# Heading cells span each annotation/local-BD pair; only C/D tag individual plots.
+# Compact the map rows; center C/D at 75% of their column widths.
 figure <- wrap_plots(
-  A = pair_heading("A", "Nine-region annotation"),
-  B = pair_heading("B", "WM1-WM3 merged"),
-  C = spatial_map(schemes[1]), D = spatial_map(schemes[1], TRUE),
-  E = spatial_map(schemes[2]), F = spatial_map(schemes[2], TRUE),
-  G = paired_plot("boundary_density", "Raw BD", "C"),
-  H = paired_plot("relative_boundary_density", "Relative BD", "D"),
-  design = "AABB\nCDEF\nGGHH", heights = c(0.3, 3.5, 3), guides = "collect"
-) + plot_annotation(
-  title = paste("Representative section:", median_id),
-  caption = "C and D: paired section summaries (n = 39).",
-  theme = theme(plot.title = element_text(hjust = 0.5, size = 15),
-                plot.caption = element_text(hjust = 0.5, size = 11))
+  map_pair(schemes[1], "A", "Nine-region annotation"),
+  map_pair(schemes[2], "B", "WM1-WM3 merged"),
+  wrap_plots(
+    plot_spacer(), paired_plot("boundary_density", "Raw BD", "C"), plot_spacer(),
+    nrow = 1, widths = c(1.25, 7.5, 1.25)
+  ),
+  wrap_plots(
+    plot_spacer(), paired_plot("relative_boundary_density", "Relative BD", "D"),
+    plot_spacer(), nrow = 1, widths = c(1.25, 7.5, 1.25)
+  ),
+  ncol = 2, heights = c(3.4, 2.8), guides = "keep"
 )
-figure <- figure & theme(legend.position = "bottom", legend.box = "vertical")
 
 dir.create(summary_dir, recursive = TRUE, showWarnings = FALSE)
 filename <- file.path(summary_dir, "Miyoshi_annotation_definition_BD_figure")
-ggsave(paste0(filename, ".pdf"), figure, width = 12, height = 9.5, bg = "white")
-ggsave(paste0(filename, ".png"), figure, width = 12, height = 9.5,
+ggsave(paste0(filename, ".pdf"), figure, width = 12, height = 7, bg = "white")
+ggsave(paste0(filename, ".png"), figure, width = 12, height = 7,
        dpi = 300, bg = "white")
 write.csv(data.frame(
   section_id = median_id,
