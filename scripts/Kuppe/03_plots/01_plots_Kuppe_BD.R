@@ -32,6 +32,7 @@ group_levels <- c(
 group_labels <- c(
   "Myogenic-enriched", "Ischaemic-enriched", "Fibrotic-enriched"
 )
+group_labels_wrapped <- sub("-", "-\n", group_labels, fixed = TRUE)
 group_palette <- c("#0072B2", "#D55E00", "#009E73")
 region_levels <- c(
   "Control", "Remote zone", "Border zone", "Ischaemic zone",
@@ -62,12 +63,12 @@ bd$patient_display <- factor(
   bd$patient_display,
   levels = c(repeated_patients, "Single-section patient")
 )
-patient_palette <- c(
+patient_shapes <- c(
   setNames(
-    grDevices::hcl.colors(length(repeated_patients), "Dark 3"),
+    c(17, 15, 18, 8, 4)[seq_along(repeated_patients)],
     repeated_patients
   ),
-  "Single-section patient" = "grey55"
+  "Single-section patient" = 16
 )
 
 theme_set(
@@ -95,51 +96,43 @@ p_relative <- ggplot(
   geom_boxplot(
     aes(
       x = sample_group_index, group = sample_group_key,
-      fill = sample_group_key
+      fill = sample_group
     ),
-    width = 0.58, alpha = 0.2, outlier.shape = NA
-  ) +
-  geom_line(
-    data = bd[bd$patient_id %in% repeated_patients, ],
-    aes(group = patient_id, color = patient_display),
-    linewidth = 0.5, alpha = 0.65
+    width = 0.42, alpha = 0.2, outlier.shape = NA, show.legend = FALSE
   ) +
   geom_point(
-    aes(color = patient_display, shape = region_label),
-    size = 2.6, alpha = 0.95
+    aes(shape = patient_display, color = dominant_niche_gt80),
+    size = 3.0, alpha = 0.95
   ) +
-  geom_point(
-    data = bd[bd$dominant_niche_gt80, ],
-    shape = 1, color = "black", size = 4.3, stroke = 0.9
+  scale_x_continuous(
+    breaks = seq_along(group_levels), labels = group_labels_wrapped
   ) +
-  geom_text(
-    data = bd[bd$dominant_niche_gt80, ],
-    aes(label = section_id), color = "black", size = 3.2,
-    nudge_y = 0.025, show.legend = FALSE
-  ) +
-  scale_x_continuous(breaks = seq_along(group_levels), labels = group_labels) +
+  scale_fill_manual(values = setNames(group_palette, group_labels)) +
   scale_color_manual(
-    values = patient_palette, breaks = repeated_patients, drop = FALSE
+    values = c(`FALSE` = "grey25", `TRUE` = "#E00000"),
+    guide = "none"
   ) +
-  scale_fill_manual(values = setNames(group_palette, group_levels)) +
+  scale_shape_manual(
+    values = patient_shapes, breaks = names(patient_shapes),
+    labels = c(repeated_patients, "Single section"), drop = FALSE
+  ) +
   labs(
-    title = "Relative boundary density (primary)",
-    subtitle = paste(
-      "Lines and colors identify patients with repeated sections;",
-      "rings mark >80% one niche"
-    ),
-    x = NULL, y = "Relative boundary density",
-    color = "Patient identity", shape = "Histomorphological region"
+    title = "Relative BD",
+    subtitle = "Red: >80% in one niche",
+    x = NULL, y = "Relative BD",
+    shape = "Patient"
   ) +
   guides(
-    fill = "none",
-    color = guide_legend(nrow = 1, override.aes = list(shape = 16)),
-    shape = guide_legend(nrow = 2, byrow = TRUE)
+    shape = guide_legend(
+      nrow = 1, title.position = "top",
+      override.aes = list(color = "grey25")
+    )
   ) +
   theme(
     legend.position = "bottom",
     legend.box = "vertical",
-    axis.text.x = element_text(angle = 15, hjust = 1)
+    legend.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 0, hjust = 0.5)
   )
 
 p_expected <- ggplot(
@@ -158,34 +151,40 @@ p_expected <- ggplot(
     aes(label = section_id), size = 3.2, color = "black",
     nudge_x = 0.015, nudge_y = 0.025, hjust = 0, show.legend = FALSE
   ) +
-  scale_color_manual(values = setNames(group_palette, group_labels)) +
+  scale_color_manual(
+    values = setNames(group_palette, group_labels),
+    breaks = group_labels, labels = group_labels_wrapped
+  ) +
   scale_shape_manual(
     values = c(`FALSE` = 16, `TRUE` = 1),
     labels = c(`FALSE` = "No", `TRUE` = "Yes")
   ) +
   coord_equal() +
   labs(
-    title = "Raw versus expected density (secondary)",
-    subtitle = "Relative BD = raw / analytic expectation",
-    x = "Expected boundary density",
-    y = "Raw boundary density",
-    color = "Histomorphological\nsample category",
+    title = "Raw vs expected BD",
+    subtitle = "Relative BD = raw / expected",
+    x = "Expected BD",
+    y = "Raw BD",
+    color = "Sample category",
     shape = ">80% one niche"
   ) +
   guides(
-    color = guide_legend(nrow = 2, byrow = TRUE),
+    color = guide_legend(nrow = 1, title.position = "top"),
     shape = "none"
   ) +
-  theme(legend.position = "bottom", legend.box = "vertical")
+  theme(
+    legend.position = "bottom",
+    legend.box = "vertical",
+    legend.title = element_text(hjust = 0.5)
+  )
 
 p_group <- p_relative + p_expected +
-  plot_layout(widths = c(1.4, 1)) +
+  plot_layout(widths = c(0.9, 1)) +
   plot_annotation(
-    title = paste(
-      "Published computational cell-type niches across Kuppe myocardial",
-      "sample categories"
+    title = "BD of myocardial cell-type niches",
+    subtitle = sprintf(
+      "%d sections from %d patients", nrow(bd), length(unique(bd$patient_id))
     ),
-    subtitle = "Each point is one Visium section; comparisons are descriptive",
     tag_levels = "A"
   )
 
