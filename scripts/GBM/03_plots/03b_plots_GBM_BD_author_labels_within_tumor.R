@@ -622,9 +622,9 @@ all_tumor_plot <- ggplot() +
 ################################################################################
 
 figure_design <- "
-AAAAAA
-BBBBBB
-CCCCCC
+AAAAAAAAAAAA
+#BBBBBBBBBB#
+#CCCCCCCCCC#
 "
 
 within_tumor_supp_plot <- wrap_plots(
@@ -632,7 +632,7 @@ within_tumor_supp_plot <- wrap_plots(
   B = wrap_elements(full = zh881_composition_context_plot),
   C = all_tumor_plot,
   design = figure_design,
-  heights = c(1.55, 1, 0.9)
+  heights = c(2, 1, 0.9)
 ) +
   plot_annotation(
     tag_levels = "A",

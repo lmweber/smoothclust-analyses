@@ -153,16 +153,16 @@ table_values <- list(
 )
 table_cells <- data.frame(
   x = rep(c(0.15, 5.3, 6.65, 8.15, 9.75, 11.3), each = 4),
-  y = rep(4:1, length(table_values)),
+  y = rep(c(4.3, 3, 2, 1), length(table_values)),
   label = unlist(table_values, use.names = FALSE),
   hjust = rep(c(0, rep(0.5, 5)), each = 4),
   fontface = rep(c("bold", rep("plain", 3)), length(table_values))
 )
 bd_table <- ggplot(table_cells, aes(x = x, y = y, label = label)) +
-  geom_text(aes(hjust = hjust, fontface = fontface), size = 3.9) +
+  geom_text(aes(hjust = hjust, fontface = fontface), size = 3.3) +
   geom_hline(yintercept = c(3.5, 0.5), colour = "#B8C2CC", linewidth = 0.3) +
   scale_x_continuous(limits = c(0, 12), expand = c(0, 0)) +
-  scale_y_continuous(limits = c(0.3, 4.7), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0.3, 5.1), expand = c(0, 0)) +
   labs(
     title = "Boundary density within each illustrative analysis",
     caption = paste(

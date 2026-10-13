@@ -68,13 +68,13 @@ parameter_label <- function(parameter_type, value) {
   )
 }
 
-make_spatial_plot <- function(spe_map, map_row, smoothing_level) {
+make_spatial_plot <- function(spe_map, map_row) {
   label_col <- map_row$label_col
   n_labels <- map_row$n_labels
   parameter_text <- if (map_row$smoothing_parameter_type == "bandwidth") {
-    paste0("b = ", sprintf("%.3f", map_row$smoothing_parameter_value))
+    paste0("b=", sprintf("%.3f", map_row$smoothing_parameter_value))
   } else {
-    paste0("k_s = ", as.integer(map_row$smoothing_parameter_value))
+    paste0("k_s=", as.integer(map_row$smoothing_parameter_value))
   }
   
   plotCoords(
@@ -84,13 +84,8 @@ make_spatial_plot <- function(spe_map, map_row, smoothing_level) {
     point_size = 1.15
   ) +
     labs(
-      title = smoothing_level,
-      subtitle = sprintf(
-        "%s; K = %s; BD = %.3f",
-        parameter_text,
-        map_row$n_clusters,
-        map_row$boundary_density
-      ),
+      title = parameter_text,
+      subtitle = sprintf("Raw BD = %.3f", map_row$boundary_density),
       color = "Cluster"
     ) +
     theme(
@@ -198,16 +193,8 @@ map_bd <- bd[
 map_small <- map_bd[which.min(map_bd$smoothing_parameter_value), ]
 map_large <- map_bd[which.max(map_bd$smoothing_parameter_value), ]
 
-small_bandwidth_map <- make_spatial_plot(
-  spe_map,
-  map_small,
-  smoothing_level = "Smaller bandwidth"
-)
-large_bandwidth_map <- make_spatial_plot(
-  spe_map,
-  map_large,
-  smoothing_level = "Larger bandwidth"
-)
+small_bandwidth_map <- make_spatial_plot(spe_map, map_small)
+large_bandwidth_map <- make_spatial_plot(spe_map, map_large)
 
 spatial_maps_plot <- small_bandwidth_map + large_bandwidth_map +
   plot_layout(ncol = 2, guides = "collect") &

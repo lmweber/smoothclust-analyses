@@ -243,9 +243,6 @@ save_plot(
 # Panel B: sample-level relative BD by author label source
 ################################################################################
 
-raw_bd_medians <- aggregate(boundary_density ~ author_label_display, author_bd, median)
-raw_bd_medians$label <- paste0("raw med. ", sprintf("%.3f", raw_bd_medians$boundary_density))
-
 relative_bd_label_plot <- ggplot(
   author_bd,
   aes(x = author_label_display, y = relative_boundary_density, group = sample_id)
@@ -262,15 +259,6 @@ relative_bd_label_plot <- ggplot(
     show.legend = FALSE
   ) +
   geom_point(aes(fill = author_label_short), shape = 21, size = 2.2, color = "gray20") +
-  geom_text(
-    data = raw_bd_medians,
-    aes(x = author_label_display, y = 0.98, label = label),
-    inherit.aes = FALSE,
-    size = 3.1,
-    angle = 90,
-    hjust = 1,
-    color = "gray30"
-  ) +
   scale_fill_manual(values = label_palette, guide = "none") +
   coord_cartesian(ylim = c(0, 1.03)) +
   labs(

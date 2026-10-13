@@ -171,14 +171,15 @@ map_plots <- lapply(seq_along(organization_labels), function(i) {
     labs(
       title = paste0(if (i == 1L) "A  " else "", as.character(result$state)),
       subtitle = sprintf(
-        "raw BD = %.3f; rBD = %.2f",
+        "Raw BD = %.3f\nRelative BD = %.2f",
         result$boundary_density, result$relative_boundary_density
       )
     ) +
     theme_void(base_size = 12) +
     theme(
       plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
-      plot.subtitle = element_text(size = 9.5, hjust = 0.5)
+      plot.subtitle = element_text(size = 9.5, hjust = 0.5),
+      plot.margin = margin(5.5, 10, 5.5, 10)
     )
 })
 maps_plot <- wrap_plots(map_plots, nrow = 1)
@@ -230,7 +231,10 @@ null_relative_plot <- ggplot(
     subtitle = "After composition adjustment; dashed line: reference of 1",
     x = "A:B label composition", y = "Relative BD"
   )
-null_plot <- null_raw_plot + null_relative_plot
+null_plot <- wrap_plots(
+  plot_spacer(), null_raw_plot + null_relative_plot, plot_spacer(),
+  nrow = 1, widths = c(0.08, 1, 0.08)
+)
 
 p_raw <- ggplot(organization_results, aes(state, group = 1)) +
   geom_line(aes(y = boundary_density, color = "Observed"), linewidth = 0.6) +
@@ -250,7 +254,10 @@ p_raw <- ggplot(organization_results, aes(state, group = 1)) +
     legend.position = "bottom"
   )
 # At fixed label counts, relative BD is a constant scaling of raw BD.
-organization_plot <- p_raw
+organization_plot <- wrap_plots(
+  plot_spacer(), p_raw, plot_spacer(),
+  nrow = 1, widths = c(0.08, 1, 0.08)
+)
 
 interface_plots <- lapply(seq_along(interface_labels), function(i) {
   result <- interface_results[i, ]
@@ -263,7 +270,7 @@ interface_plots <- lapply(seq_along(interface_labels), function(i) {
     labs(
       title = paste0(if (i == 1L) "D  " else "", "A:B = ", result$state),
       subtitle = sprintf(
-        "raw BD = %.3f; expected = %.3f\nrelative BD = %.3f",
+        "Raw BD = %.3f\nExpected BD = %.3f\nRelative BD = %.3f",
         result$boundary_density, result$expected_boundary_density,
         result$relative_boundary_density
       )
@@ -271,7 +278,8 @@ interface_plots <- lapply(seq_along(interface_labels), function(i) {
     theme_void(base_size = 12) +
     theme(
       plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
-      plot.subtitle = element_text(size = 9.5, hjust = 0.5)
+      plot.subtitle = element_text(size = 9.5, hjust = 0),
+      plot.margin = margin(5.5, 10, 5.5, 10)
     )
 })
 interface_plot <- wrap_plots(interface_plots, nrow = 1)

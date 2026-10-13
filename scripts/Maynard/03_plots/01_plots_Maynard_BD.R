@@ -99,7 +99,8 @@ for (i in seq_along(section_ids)) {
   ) +
     geom_point(size = 0.55, show.legend = TRUE) +
     scale_color_manual(
-      values = layer_palette, limits = layer_levels, drop = FALSE
+      values = layer_palette, limits = layer_levels, drop = FALSE,
+      guide = guide_legend(nrow = 1, override.aes = list(size = 2.5))
     ) +
     scale_y_reverse() + coord_fixed() +
     labs(
@@ -112,7 +113,11 @@ for (i in seq_along(section_ids)) {
   ) +
     geom_point(size = 0.55) +
     scale_color_gradientn(
-      colors = c("grey95", "#FDB863", "#B2182B"), limits = c(0, 1)
+      colors = c("grey95", "#FDB863", "#B2182B"), limits = c(0, 1),
+      guide = guide_colorbar(
+        direction = "vertical", title.position = "top",
+        barheight = grid::unit(4, "cm")
+      )
     ) +
     scale_y_reverse() + coord_fixed() +
     labs(
@@ -124,7 +129,11 @@ for (i in seq_along(section_ids)) {
     ) + spatial_theme
 }
 
-p_layer_maps <- wrap_plots(layer_maps, ncol = 4, guides = "collect") &
+map_design <- "A#B#C#D\nE#F#G#H\nI#J#K#L"
+map_widths <- c(1, 0.12, 1, 0.12, 1, 0.12, 1)
+p_layer_maps <- wrap_plots(
+  layer_maps, design = map_design, widths = map_widths, guides = "collect"
+) &
   theme(legend.position = "bottom")
 p_layer_maps <- p_layer_maps +
   plot_annotation(
@@ -133,15 +142,17 @@ p_layer_maps <- p_layer_maps +
   )
 # Preserve the paired summary above all annotation maps on the first atlas page.
 p_summary_and_layers <- p_summary / wrap_elements(full = p_layer_maps) +
-  plot_layout(heights = c(1, 2.2))
+  plot_layout(heights = c(0.8, 2.2))
 save_plot(
   p_summary_and_layers,
   file.path(spatial_dir, "Maynard_all_sections_manual_layer_maps"),
   8.5, 10.2
 )
 
-p_local_maps <- wrap_plots(local_maps, ncol = 4, guides = "collect") &
-  theme(legend.position = "bottom")
+p_local_maps <- wrap_plots(
+  local_maps, design = map_design, widths = map_widths, guides = "collect"
+) &
+  theme(legend.position = "right")
 p_local_maps <- p_local_maps +
   plot_annotation(
     title = "Local boundary density for all 12 DLPFC sections",

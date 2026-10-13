@@ -179,12 +179,9 @@ p_expected <- ggplot(
   )
 
 p_group <- p_relative + p_expected +
-  plot_layout(widths = c(0.9, 1)) +
+  plot_layout(widths = c(0.8, 1)) +
   plot_annotation(
     title = "BD of myocardial cell-type niches",
-    subtitle = sprintf(
-      "%d sections from %d patients", nrow(bd), length(unique(bd$patient_id))
-    ),
     tag_levels = "A"
   )
 
@@ -365,11 +362,7 @@ for (i in seq_len(nrow(examples))) {
 
 p_spatial <- wrap_plots(spatial_plots, ncol = 2, guides = "collect") +
   plot_annotation(
-    title = "Representative Kuppe myocardial infarction sections",
-    subtitle = paste(
-      "Published computational cell-type niches;",
-      "one median-relative-BD section from each sample category"
-    )
+    title = "Representative Kuppe myocardial infarction sections"
   )
 
 save_plot(

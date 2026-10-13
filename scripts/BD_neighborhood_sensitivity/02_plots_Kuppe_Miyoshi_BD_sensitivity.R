@@ -95,14 +95,14 @@ for (dataset_id in c("Kuppe", "Miyoshi")) {
   }
 }
 
-caption <- "Each point is one section; dashed lines indicate equality."
+caption_lines <- character()
 if (length(omission_notes)) {
-  caption <- paste(
-    caption, "Undefined relative BD:", paste(omission_notes, collapse = "; ")
+  caption_lines <- strwrap(
+    paste("Undefined relative BD:", paste(omission_notes, collapse = "; ")),
+    width = 95
   )
 }
-caption_lines <- strwrap(caption, width = 95)
-caption <- paste(caption_lines, collapse = "\n")
+caption <- if (length(caption_lines)) paste(caption_lines, collapse = "\n") else NULL
 figure <- wrap_plots(panels, ncol = 2, guides = "collect") +
   plot_annotation(
     title = "Boundary density neighborhood sensitivity",
@@ -112,7 +112,7 @@ figure <- wrap_plots(panels, ncol = 2, guides = "collect") +
 
 dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
 figure_path <- file.path(plot_dir, "Kuppe_Miyoshi_BD_k_sensitivity")
-figure_height <- 9 + 0.16 * (length(caption_lines) - 1)
+figure_height <- 9 + 0.16 * max(0, length(caption_lines) - 1)
 ggsave(paste0(figure_path, ".pdf"), figure, width = 10, height = figure_height,
        bg = "white")
 ggsave(paste0(figure_path, ".png"), figure, width = 10, height = figure_height,

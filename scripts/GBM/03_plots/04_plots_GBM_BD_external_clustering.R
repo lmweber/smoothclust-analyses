@@ -89,8 +89,8 @@ bd_baseline <- add_standard_columns(
 
 external_method_labels <- c(
   bayesspace = "BayesSpace",
-  banksy = "Banksy",
-  clustsignal = "clustSIGNAL"
+  banksy = "BANKSY",
+  clustsignal = "ClustSIGNAL"
 )
 missing_methods <- setdiff(names(external_method_labels), unique(bd_external$method))
 if (length(missing_methods) > 0L) {
@@ -113,8 +113,8 @@ method_order <- c(
   "smoothclust",
   "Unsmoothed k-means",
   "BayesSpace",
-  "Banksy",
-  "clustSIGNAL"
+  "BANKSY",
+  "ClustSIGNAL"
 )
 
 bd$method_display <- factor(bd$method_display, levels = method_order)
@@ -159,8 +159,8 @@ method_palette <- c(
   "smoothclust" = "#1B9E77",
   "Unsmoothed k-means" = "#D95F02",
   "BayesSpace" = "#7570B3",
-  "Banksy" = "#E7298A",
-  "clustSIGNAL" = "#66A61E"
+  "BANKSY" = "#E7298A",
+  "ClustSIGNAL" = "#66A61E"
 )
 
 
@@ -267,14 +267,7 @@ method_axis_labels <- vapply(
     )
     method_settings <- method_settings[!is.na(method_settings)]
     method_settings <- sub("^K=", "K = ", method_settings)
-    axis_method <- switch(
-      method,
-      Banksy = "BANKSY",
-      clustSIGNAL = "ClustSIGNAL",
-      method
-    )
-    
-    paste0(axis_method, "\n(", paste(method_settings, collapse = ", "), ")")
+    paste0(method, "\n(", paste(method_settings, collapse = ", "), ")")
   },
   character(1)
 )
@@ -304,7 +297,7 @@ save_plot(
 )
 
 
-# Observed label counts for clustSIGNAL
+# Observed label counts for ClustSIGNAL
 
 label_count_plot <- ggplot(
   bd_external,

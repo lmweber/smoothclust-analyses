@@ -160,8 +160,7 @@ domain_colors <- c(A = "#0072B2", B = "#D55E00", C = "#009E73")
 theme_map <- theme_void(base_size = 12) +
   theme(
     plot.title = element_text(face = "bold", size = 12),
-    plot.subtitle = element_text(size = 10),
-    legend.position = "bottom"
+    plot.subtitle = element_text(size = 10)
   )
 
 best_ix <- which.max(metrics$adjusted_rand_index)
@@ -172,9 +171,10 @@ truth_df <- data.frame(
 p_truth <- ggplot(truth_df, aes(x, y, fill = label)) +
   geom_raster() +
   scale_fill_manual(values = domain_colors, name = "Domain") +
+  guides(fill = guide_legend(ncol = 1, title.position = "top")) +
   coord_fixed() +
   labs(title = "True domains", subtitle = sprintf(
-    "Broad A/B domains; %d-location C island", sum(truth == "C")
+    "Broad A/B domains\n%d-location C island", sum(truth == "C")
   )) +
   theme_map
 
@@ -195,7 +195,7 @@ map_plots <- lapply(representative, function(bandwidth) {
         sprintf("Bandwidth = %.1f%%", 100 * bandwidth)
       },
       subtitle = sprintf(
-        "ARI %.2f; island F1 %.2f", result$adjusted_rand_index,
+        "ARI %.2f\nIsland F1 %.2f", result$adjusted_rand_index,
         result$small_domain_f1
       )
     ) +
@@ -253,27 +253,25 @@ p_relative <- ggplot(metrics, aes(100 * bandwidth, relative_boundary_density)) +
   geom_point(color = "#CC79A7", size = 2) +
   scale_y_log10() +
   labs(
-    title = "Relative BD: composition-adjusted summary",
-    subtitle = "Dashed: truth; dotted: random-label expectation",
+    title = "Relative BD:\ncomposition-adjusted summary",
+    subtitle = "Dashed: truth\nDotted: random-label expectation",
     x = "Smoothing bandwidth (% of section width)",
     y = "Relative BD (log scale)"
   ) +
   theme_bw(base_size = 12) +
   theme(plot.title = element_text(face = "bold"))
 
-figure <- (p_truth + wrap_plots(map_plots, nrow = 1) +
-  plot_layout(guides = "collect")) /
+maps_plot <- (p_truth + wrap_plots(map_plots, nrow = 1) +
+  plot_layout(guides = "collect")) &
+  theme(legend.position = "right", legend.direction = "vertical")
+
+figure <- maps_plot /
   (p_recovery + p_raw + p_relative) +
   plot_annotation(
     title = "Illustrative over-smoothing: lower BD with poorer recovery",
-    subtitle = paste(
-      "Three-domain count simulation; fixed feature set, PCA dimensions,",
-      "cluster number, and four-neighbor BD graph"
-    ),
     tag_levels = "A",
     theme = theme(
       plot.title = element_text(size = 15),
-      plot.subtitle = element_text(size = 12),
       plot.tag = element_text(size = 15)
     )
   )

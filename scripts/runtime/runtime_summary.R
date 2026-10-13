@@ -121,20 +121,7 @@ write.csv(
 
 # Stage levels define the left-to-right order of each stacked bar.
 runtime$stage <- factor(runtime$stage, levels = stages)
-runtime$workflow_label <- paste0(
-  runtime$workflow, "\n",
-  format(
-    runtime$n_locations, big.mark = ",", scientific = FALSE, trim = TRUE
-  ),
-  " locations; ",
-  format(runtime$n_genes, big.mark = ",", scientific = FALSE, trim = TRUE),
-  " genes\n", runtime$n_threads, " NN threads; ",
-  ifelse(
-    runtime$platform == "Visium",
-    paste0("per-section K=", gbm$comparable_n_clusters, " fit"),
-    "30,000-location fit"
-  )
-)
+runtime$workflow_label <- runtime$workflow
 # Order by total runtime; coord_flip places the longest workflow at the top.
 label_order <- unique(runtime$workflow_label[order(runtime$total_seconds)])
 runtime$workflow_label <- factor(runtime$workflow_label, levels = label_order)
@@ -233,27 +220,13 @@ p_method <- ggplot(
     panel.grid.major.x = element_blank()
   )
 
-runtime_figure <- (p_core / p_method) +
-  plot_layout(heights = c(1.15, 1)) +
+runtime_figure <- wrap_plots(
+  A = p_core, B = p_method, design = "AAA\n#B#",
+  widths = c(0.08, 1, 0.08), heights = c(1.15, 1)
+) +
   plot_annotation(
     tag_levels = "A",
-    caption = paste0(
-      "A: GBM component-derived K=", gbm$comparable_n_clusters, " totals over ",
-      gbm$n_samples_after_filter, " independent sections; HVG selection and PCA included.\n",
-      "HD/Xenium: one observed run each; 30,000-location fit plus full projection/assignment.\n",
-      "Core totals exclude import, output, plotting, diagnostics, and HD author-label BD.\n",
-      "B: smoothclust reuses the component-derived GBM total; external totals sum per-section timers.\n",
-      "Requested K is shown for each method; ClustSIGNAL uses defaults.\n",
-      "Method timings include method-specific preprocessing/reduction, clustering/labeling, and BD;\n",
-      "exclude shared filtering, import, output, and plotting. GBM requested ",
-      paste(unique(external$requested_threads), collapse = ", "),
-      " threads where supported.\n",
-      "Hardware: 2023 MacBook Pro, Apple M3 Max (14 cores), 36 GB memory."
-    ),
-    theme = theme(
-      plot.tag = element_text(face = "bold", size = 15),
-      plot.caption = element_text(size = 10, hjust = 0, lineheight = 1.1)
-    )
+    theme = theme(plot.tag = element_text(face = "bold", size = 15))
   )
 
 ggsave(

@@ -201,7 +201,7 @@ ari_pairwise_plot <- ggplot(
     x = "Number of clusters",
     y = "Adjusted Rand index"
   ) +
-  guides(color = guide_legend(nrow = 1)) +
+  guides(color = guide_legend(nrow = 1, override.aes = list(size = 1.8))) +
   theme(
     legend.position = "bottom",
     legend.box = "horizontal"

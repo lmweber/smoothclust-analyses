@@ -56,18 +56,6 @@ save_plot <- function(plot, filename, width, height) {
   )
 }
 
-boundary_k_label <- function(boundary_k) {
-  if (boundary_k == min(map_boundary_k_values)) {
-    "Small neighborhood"
-  } else if (boundary_k == default_boundary_k) {
-    "Default neighborhood"
-  } else if (boundary_k == max(map_boundary_k_values)) {
-    "Large neighborhood"
-  } else {
-    paste0("BD k = ", boundary_k)
-  }
-}
-
 make_local_bd_plot <- function(spe_map, map_row) {
   local_col <- map_row$local_boundary_density_col
   
@@ -78,13 +66,8 @@ make_local_bd_plot <- function(spe_map, map_row) {
     point_size = 1.15
   ) +
     labs(
-      title = boundary_k_label(map_row$boundary_k),
-      subtitle = sprintf(
-        "BD k = %s; K = %s; BD = %.3f",
-        map_row$boundary_k,
-        map_row$n_clusters,
-        map_row$boundary_density
-      ),
+      title = paste0("k = ", map_row$boundary_k),
+      subtitle = sprintf("Raw BD = %.3f", map_row$boundary_density),
       color = "Local BD"
     ) +
     theme(
