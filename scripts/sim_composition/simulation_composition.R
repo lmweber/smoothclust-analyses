@@ -3,6 +3,7 @@
 ################################################################################
 
 # Run from the smoothclust-analyses repository root directory.
+# Recreates the simulation results and figures in one complete run.
 
 library(smoothclust)
 library(ggplot2)
@@ -169,9 +170,9 @@ map_plots <- lapply(seq_along(organization_labels), function(i) {
     scale_fill_manual(values = label_palette, guide = "none") +
     coord_equal(expand = FALSE) +
     labs(
-      title = paste0(if (i == 1L) "A  " else "", as.character(result$state)),
+      title = as.character(result$state),
       subtitle = sprintf(
-        "Raw BD = %.3f\nRelative BD = %.2f",
+        "Raw BD = %.3f\nRelative BD = %.3f",
         result$boundary_density, result$relative_boundary_density
       )
     ) +
@@ -208,7 +209,7 @@ null_raw_plot <- ggplot(null_results, aes(composition, boundary_density)) +
   stat_summary(fun = mean, geom = "point", shape = 23, size = 2,
                fill = "white") +
   labs(
-    title = "B  Random arrangements: raw BD",
+    title = "Random arrangements: raw BD",
     subtitle = "Dashed bars: analytic composition-specific expectation",
     x = "A:B label composition", y = "Raw BD"
   )
@@ -247,8 +248,12 @@ p_raw <- ggplot(organization_results, aes(state, group = 1)) +
     aes(y = expected_boundary_density, color = "Expected"),
     shape = 1, size = 1.8
   ) +
-  scale_color_manual(values = c(Observed = "#D55E00", Expected = "grey30")) +
-  labs(title = "C  Raw and expected BD", x = NULL, y = "BD", color = NULL) +
+  scale_color_manual(
+    values = c(Observed = "#D55E00", Expected = "grey30"),
+    labels = c(Observed = "Raw BD", Expected = "Expected raw BD")
+  ) +
+  labs(title = "Raw and expected raw BD", x = NULL,
+       y = "Raw and expected raw BD", color = NULL) +
   theme(
     axis.text.x = element_text(angle = 30, hjust = 1),
     legend.position = "bottom"
@@ -268,9 +273,9 @@ interface_plots <- lapply(seq_along(interface_labels), function(i) {
     scale_fill_manual(values = label_palette, guide = "none") +
     coord_equal(expand = FALSE) +
     labs(
-      title = paste0(if (i == 1L) "D  " else "", "A:B = ", result$state),
+      title = paste0("A:B = ", result$state),
       subtitle = sprintf(
-        "Raw BD = %.3f\nExpected BD = %.3f\nRelative BD = %.3f",
+        "Raw BD = %.3f\nExpected raw BD = %.3f\nRelative BD = %.3f",
         result$boundary_density, result$expected_boundary_density,
         result$relative_boundary_density
       )
@@ -284,7 +289,16 @@ interface_plots <- lapply(seq_along(interface_labels), function(i) {
 })
 interface_plot <- wrap_plots(interface_plots, nrow = 1)
 
-figure <- maps_plot / null_plot / organization_plot / interface_plot +
+tag_group <- function(plot, tag) {
+  wrap_elements(full = plot) + labs(tag = tag) +
+    theme(
+      plot.tag = element_text(face = "bold", size = 14, hjust = 0),
+      plot.tag.position = c(0, 1),
+      plot.margin = margin(5.5, 5.5, 5.5, 15)
+    )
+}
+figure <- tag_group(maps_plot, "A") / tag_group(null_plot, "B") /
+  tag_group(organization_plot, "C") / tag_group(interface_plot, "D") +
   plot_layout(heights = c(0.95, 1.1, 1.25, 1.2))
 ggsave(
   file.path(plots_dir, "sim_composition.pdf"),

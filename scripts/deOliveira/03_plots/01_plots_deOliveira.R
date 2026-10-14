@@ -38,10 +38,11 @@ xe <- readRDS(
 
 theme_spatial <- theme_void(base_size = 14) +
   theme(
-    plot.title = element_text(size = 14, face = "bold"),
-    plot.subtitle = element_text(size = 12),
-    legend.title = element_text(size = 12),
-    legend.text = element_text(size = 9)
+    plot.title = element_text(size = 19, face = "bold"),
+    plot.subtitle = element_text(size = 14),
+    legend.title = element_text(size = 17),
+    legend.text = element_text(size = 14),
+    legend.margin = margin(2, 2, 2, 2)
   )
 
 # Rasterize spatial layers to keep PDF files manageable.
@@ -52,8 +53,8 @@ hd_author <- ggplot(hd, aes(x = x, y = y, fill = author_cluster)) +
   coord_fixed() +
   guides(fill = "none") +
   labs(
-    title = "Distributed cluster labels",
-    subtitle = "Full P2CRC 8-µm Visium HD section"
+    title = "Distributed labels",
+    subtitle = "8-µm bins; whole section"
   ) +
   theme_spatial
 
@@ -64,17 +65,20 @@ hd_smooth <- ggplot(hd, aes(x = x, y = y, fill = smoothclust_label)) +
   coord_fixed() +
   guides(fill = "none") +
   labs(
-    title = "smoothclust-smoothed domains",
-    subtitle = "30,000-bin sketched PCA/k-means fit; 15 domains"
+    title = "smoothclust domains",
+    subtitle = "15 domains; 30,000-bin sketch"
   ) +
   theme_spatial
 
 hd_local <- ggplot(hd, aes(x = x, y = y, fill = local_bd_smoothclust)) +
   rasterise(geom_tile(width = 1, height = 1), dpi = 300) +
-  scale_fill_viridis_c(limits = c(0, 1), name = "Local BD") +
+  scale_fill_viridis_c(
+    limits = c(0, 1), name = "Local raw BD",
+    guide = guide_colorbar(barheight = grid::unit(3.4, "cm"))
+  ) +
   scale_y_reverse() +
   coord_fixed() +
-  labs(title = "Local boundary density", subtitle = "Eight-neighbor BD graph") +
+  labs(title = "Local raw BD", subtitle = "Eight-neighbor graph") +
   theme_spatial
 
 hd_figure <- hd_author + hd_smooth + hd_local +
@@ -84,7 +88,10 @@ hd_figure <- hd_author + hd_smooth + hd_local +
       "Author-cluster and smoothclust colors are independent;",
       "cluster numbers are not matched"
     ),
-    theme = theme(text = element_text(size = 14))
+    theme = theme(
+      plot.title = element_text(size = 20, face = "bold"),
+      plot.subtitle = element_text(size = 15)
+    )
   )
 
 xe_smooth <- ggplot(xe, aes(x = x, y = y, color = smoothclust_label)) +
@@ -94,23 +101,26 @@ xe_smooth <- ggplot(xe, aes(x = x, y = y, color = smoothclust_label)) +
   coord_fixed() +
   guides(color = "none") +
   labs(
-    title = "smoothclust-smoothed domains",
-    subtitle = "30,000-cell sketched PCA/k-means fit; 15 domains"
+    title = "smoothclust domains",
+    subtitle = "15 domains; 30,000-cell sketch"
   ) +
   theme_spatial
 
 xe_local <- ggplot(xe, aes(x = x, y = y, color = local_bd_smoothclust)) +
   geom_point_rast(size = 0.08, raster.dpi = 300) +
-  scale_color_viridis_c(limits = c(0, 1), name = "Local BD") +
+  scale_color_viridis_c(
+    limits = c(0, 1), name = "Local raw BD",
+    guide = guide_colorbar(barheight = grid::unit(3.4, "cm"))
+  ) +
   scale_y_reverse() +
   coord_fixed() +
-  labs(title = "Local boundary density", subtitle = "Six-neighbor cell graph") +
+  labs(title = "Local raw BD", subtitle = "Six-neighbor graph") +
   theme_spatial
 
 xe_figure <- xe_smooth + xe_local +
   plot_annotation(
     title = "de Oliveira P2CRC Xenium",
-    theme = theme(text = element_text(size = 14))
+    theme = theme(plot.title = element_text(size = 20, face = "bold"))
   )
 
 save_plot(

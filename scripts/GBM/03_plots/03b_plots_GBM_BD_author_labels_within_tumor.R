@@ -231,7 +231,7 @@ if (any(is.na(map_section_summary$sample_id))) {
 
 map_section_summary$map_facet <- paste0(
   map_section_summary$section_display,
-  "\nMP relative BD = ",
+  "\nRelative BD = ",
   sprintf("%.2f", map_section_summary$mp_relative_boundary_density)
 )
 map_facet_levels <- map_section_summary$map_facet
@@ -264,11 +264,13 @@ map_theme <- theme_void(base_size = 11) +
   theme(
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA),
-    plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
+    plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
     strip.background = element_rect(fill = "gray90", color = "gray45"),
-    strip.text = element_text(size = 10),
+    strip.text = element_text(size = 12),
     legend.position = "right",
-    legend.title = element_text(size = 10)
+    legend.title = element_text(size = 12),
+    legend.box.spacing = grid::unit(2, "pt"),
+    legend.margin = margin(0, 0, 0, 0)
   )
 map_base <- ggplot(map_df, aes(x = x, y = y)) +
   geom_point(color = "gray90", size = 0.4) +
@@ -286,14 +288,14 @@ mp_map_plot <- map_base +
   ) +
   scale_color_manual(values = mp_palette, limits = mp_levels, drop = FALSE) +
   labs(
-    title = "Dominant metaprogram maps",
+    title = "ZH881 metaprograms",
     x = NULL,
     y = NULL,
-    color = "Dominant metaprogram"
+    color = "Metaprogram"
   ) +
   theme(
-    legend.text = element_text(size = 8.5),
-    legend.key.height = grid::unit(0.7, "lines")
+    legend.text = element_text(size = 12),
+    legend.key.height = grid::unit(0.85, "lines")
   ) +
   guides(
     color = guide_legend(
@@ -319,12 +321,12 @@ local_bd_map_plot <- map_base +
     oob = scales::squish
   ) +
   labs(
-    title = "Local boundary density from dominant metaprogram labels",
+    title = "Local raw BD (metaprograms)",
     x = NULL,
     y = NULL,
-    color = "Local BD"
+    color = "Local raw BD"
   ) +
-  theme(legend.text = element_text(size = 9))
+  theme(legend.text = element_text(size = 11))
 
 map_pair_plot <- mp_map_plot / local_bd_map_plot +
   plot_layout(heights = c(1, 1))
@@ -378,6 +380,7 @@ composition_plot <- ggplot(
   ) +
   theme(
     axis.text.x = element_text(angle = 30, hjust = 1),
+    axis.text.y = element_text(size = 11),
     legend.position = "none"
   )
 
@@ -476,7 +479,7 @@ zh881_context_plot <- ggplot(
   geom_tile(color = "white", linewidth = 0.7) +
   geom_text(
     aes(label = percent_label, color = text_color),
-    size = 3.5,
+    size = 4.5,
     show.legend = FALSE
   ) +
   scale_fill_gradient(
@@ -488,10 +491,11 @@ zh881_context_plot <- ggplot(
   ) +
   scale_color_identity() +
   labs(x = "Section", y = NULL) +
-  theme_minimal(base_size = 11) +
+  theme_minimal(base_size = 12) +
   theme(
     panel.grid = element_blank(),
-    axis.text.x = element_text(angle = 30, hjust = 1),
+    axis.text.x = element_text(size = 12, angle = 30, hjust = 1),
+    axis.text.y = element_text(size = 12),
     axis.ticks = element_blank(),
     plot.margin = margin(0, 5.5, 5.5, 5.5)
   )
@@ -582,7 +586,10 @@ all_tumor_plot <- ggplot() +
   scale_x_continuous(
     expand = expansion(mult = c(0.02, 0.02))
   ) +
-  scale_y_discrete(labels = section_label_lookup) +
+  scale_y_discrete(labels = function(x) {
+    sub("T1 contrast-enhancing", "T1 contrast-\nenhancing",
+        section_label_lookup[x], fixed = TRUE)
+  }) +
   scale_shape_manual(values = label_source_shapes, drop = FALSE) +
   scale_fill_gradient(
     low = "#F7FBFF",
@@ -594,7 +601,7 @@ all_tumor_plot <- ggplot() +
   ) +
   labs(
     title = "Within-tumor section differences",
-    x = "Relative boundary density",
+    x = "Relative BD",
     y = NULL,
     shape = "Author label",
     fill = "Structured-zone fraction"
@@ -605,7 +612,11 @@ all_tumor_plot <- ggplot() +
     legend.position = "bottom",
     legend.box = "horizontal",
     legend.margin = margin(t = -2, unit = "pt"),
-    strip.text = element_text(face = "bold")
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    axis.text.x = element_text(size = 11),
+    axis.text.y = element_text(size = 12.5, lineheight = 0.9),
+    strip.text = element_text(face = "bold", size = 13)
   ) +
   guides(
     shape = guide_legend(nrow = 1, byrow = TRUE),
@@ -630,10 +641,10 @@ within_tumor_supp_plot <- wrap_plots(
   )),
   C = wrap_elements(full = wrap_plots(
     plot_spacer(), all_tumor_plot, plot_spacer(),
-    nrow = 1, widths = c(1, 10, 1)
+    nrow = 1, widths = c(0.5, 11, 0.5)
   )),
   ncol = 1,
-  heights = c(2, 1, 0.9)
+  heights = c(2, 1, 1.05)
 ) +
   plot_annotation(tag_levels = "A") &
   theme(

@@ -75,9 +75,11 @@ for (dataset_id in c("Kuppe", "Miyoshi")) {
       coord_equal(xlim = row_limits, ylim = row_limits, expand = FALSE) +
       labs(
         title = dataset_id,
-        subtitle = sprintf("Spearman rho = %s; n = %d", rho_label, sum(defined)),
-        x = "Relative boundary density (k = 6)",
-        y = sprintf("Relative boundary density (k = %d)", k)
+        subtitle = bquote(
+          "Spearman " * rho * " = " * .(rho_label) * "; n = " * .(sum(defined))
+        ),
+        x = expression("Relative BD (" * italic(k) * "=6)"),
+        y = bquote("Relative BD (" * italic(k) * "=" * .(k) * ")")
       ) +
       theme(plot.title = element_text(face = "bold"))
     if (dataset_id == "Kuppe") {
@@ -86,7 +88,7 @@ for (dataset_id in c("Kuppe", "Miyoshi")) {
           values = group_palette, limits = group_levels, labels = group_labels,
           drop = FALSE
         ) +
-        labs(color = "Histomorphological sample category") +
+        labs(color = "Kuppe sample category") +
         guides(color = guide_legend(nrow = 1))
     } else {
       p <- p + geom_point(size = 2.4, color = "grey30", alpha = 0.9)

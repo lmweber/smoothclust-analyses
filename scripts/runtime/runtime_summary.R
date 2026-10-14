@@ -212,12 +212,13 @@ p_method <- ggplot(
   labs(
     title = "GBM runtime by clustering method",
     subtitle = paste(gbm$n_samples_after_filter, "section workflows; method timings include BD"),
-    x = NULL, y = "Elapsed time (seconds, log10 scale)"
+    x = NULL, y = "Time (s, log scale)"
   ) +
   theme_bw(base_size = 13) +
   theme(
     plot.title = element_text(face = "bold"),
-    panel.grid.major.x = element_blank()
+    panel.grid.major.x = element_blank(),
+    axis.title.y = element_text(margin = margin(r = 3))
   )
 
 runtime_figure <- wrap_plots(

@@ -131,7 +131,9 @@ p_relative <- ggplot(
   theme(
     legend.position = "bottom",
     legend.box = "vertical",
-    legend.title = element_text(hjust = 0.5),
+    legend.title = element_text(hjust = 0.5, size = 15),
+    legend.text = element_text(size = 13),
+    legend.key.width = grid::unit(0.9, "lines"),
     axis.text.x = element_text(angle = 0, hjust = 0.5)
   )
 
@@ -148,7 +150,7 @@ p_expected <- ggplot(
   ) +
   geom_text(
     data = bd[bd$dominant_niche_gt80, ],
-    aes(label = section_id), size = 3.2, color = "black",
+    aes(label = section_id), size = 3.8, color = "black",
     nudge_x = 0.015, nudge_y = 0.025, hjust = 0, show.legend = FALSE
   ) +
   scale_color_manual(
@@ -175,7 +177,8 @@ p_expected <- ggplot(
   theme(
     legend.position = "bottom",
     legend.box = "vertical",
-    legend.title = element_text(hjust = 0.5)
+    legend.title = element_text(hjust = 0.5, size = 15),
+    legend.text = element_text(size = 13)
   )
 
 p_group <- p_relative + p_expected +
@@ -346,9 +349,9 @@ for (i in seq_len(nrow(examples))) {
     scale_y_reverse() +
     coord_fixed() +
     labs(
-      title = "Local boundary density",
+      title = "Local raw BD",
       subtitle = sprintf("Relative BD = %.3f", result$relative_boundary_density),
-      color = "Local BD"
+      color = "Local raw BD"
     ) +
     spatial_theme
 

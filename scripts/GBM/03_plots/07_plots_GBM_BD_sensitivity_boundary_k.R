@@ -68,7 +68,7 @@ make_local_bd_plot <- function(spe_map, map_row) {
     labs(
       title = paste0("k = ", map_row$boundary_k),
       subtitle = sprintf("Raw BD = %.3f", map_row$boundary_density),
-      color = "Local BD"
+      color = "Local raw BD"
     ) +
     theme(
       legend.position = "right",
@@ -240,7 +240,7 @@ sample_level_bd_plot <- ggplot(
   guides(fill = "none", color = "none") +
   theme(
     strip.text = element_text(size = 11.5),
-    axis.text.x = element_text(angle = 35, hjust = 1)
+    axis.text.x = element_text(angle = 0, hjust = 0.5)
   )
 
 save_plot(

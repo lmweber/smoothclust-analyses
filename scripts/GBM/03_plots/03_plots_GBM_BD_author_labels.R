@@ -141,8 +141,8 @@ map_metrics <- author_bd[as.character(author_bd$sample_id) == map_sample_id, ]
 map_metrics <- map_metrics[match(label_levels, as.character(map_metrics$author_label_col)), ]
 map_metrics$facet_label <- paste0(
   map_metrics$author_label_short,
-  "\nBD ", sprintf("%.3f", map_metrics$boundary_density),
-  "; relBD ", sprintf("%.2f", map_metrics$relative_boundary_density)
+  "\nRaw BD ", sprintf("%.3f", map_metrics$boundary_density),
+  "\nRelative BD ", sprintf("%.2f", map_metrics$relative_boundary_density)
 )
 
 label_map_df <- data.frame()
@@ -189,23 +189,47 @@ map_palette <- setNames(
   map_labels
 )
 
+# Group the legend by the saved field membership, keeping the original colors.
+legend_groups <- c("Organization zones", "Metaprograms", "State layers")
+field_groups <- setNames(legend_groups[c(1, 1, 2, 3)], label_levels)
+legend_entries <- unique(data.frame(
+  group = unname(field_groups[label_map_df$author_label_col]),
+  label = label_map_df$label
+))
+legend_plots <- lapply(legend_groups, function(group) {
+  entries <- legend_entries[legend_entries$group == group, ]
+  ggplot(entries, aes(y = label)) +
+    geom_point(aes(color = label), x = 0.05, size = 2.2) +
+    geom_text(aes(label = label), x = 0.10, hjust = 0, size = 3.4) +
+    scale_color_manual(values = map_palette, guide = "none") +
+    scale_x_continuous(limits = c(0, 1), expand = expansion(mult = 0)) +
+    scale_y_discrete(limits = rev(sort(entries$label)),
+                     expand = expansion(add = 0.6)) +
+    labs(title = group) +
+    theme_void() +
+    theme(
+      plot.title = element_text(size = 11, face = "bold", hjust = 0),
+      plot.margin = margin(3, 3, 3, 3)
+    )
+})
+map_label_legend <- wrap_plots(
+  legend_plots, ncol = 1,
+  heights = as.numeric(table(factor(legend_entries$group, legend_groups))) + 2
+)
+
 label_map_plot <- ggplot(label_map_df, aes(x = x, y = -y, color = label)) +
   geom_point(size = 0.35) +
   coord_fixed() +
   facet_wrap(~ facet_label, nrow = 1) +
-  scale_color_manual(values = map_palette) +
+  scale_color_manual(values = map_palette, guide = "none") +
   labs(x = NULL, y = NULL, color = "Label") +
   theme_void(base_size = 12) +
   theme(
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA),
     strip.background = element_rect(fill = "gray90", color = "gray45"),
-    strip.text = element_text(size = 10),
-    legend.position = "right",
-    legend.text = element_text(size = 7.5),
-    legend.key.height = grid::unit(0.4, "lines")
-  ) +
-  guides(color = guide_legend(ncol = 1, override.aes = list(size = 2)))
+    strip.text = element_text(size = 10)
+  )
 
 local_map_plot <- ggplot(
   local_map_df,
@@ -216,20 +240,33 @@ local_map_plot <- ggplot(
   facet_wrap(~ facet_label, nrow = 1) +
   scale_color_gradientn(
     colors = rev(grDevices::hcl.colors(60, palette = "YlOrRd")),
-    limits = c(0, 1)
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.25),
+    labels = label_number(accuracy = 0.01),
+    guide = guide_colorbar(
+      direction = "horizontal", title.position = "top",
+      barwidth = grid::unit(9, "cm"), barheight = grid::unit(0.35, "cm")
+    )
   ) +
-  labs(x = NULL, y = NULL, color = "Local BD") +
+  labs(x = NULL, y = NULL, color = "Local raw BD") +
   theme_void(base_size = 12) +
   theme(
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA),
     strip.background = element_rect(fill = "gray90", color = "gray45"),
     strip.text = element_text(size = 10),
-    legend.position = "right"
+    legend.position = "bottom",
+    legend.title = element_text(size = 11),
+    legend.text = element_text(size = 10),
+    legend.margin = margin(4, 8, 6, 8)
   )
 
-map_pair_plot <- label_map_plot / local_map_plot +
-  plot_layout(heights = c(1, 1), guides = "collect")
+map_pair_plot <- wrap_plots(
+  A = label_map_plot, B = local_map_plot,
+  C = wrap_elements(full = map_label_legend, ignore_tag = TRUE),
+  design = "AC\nBC", widths = c(4.5, 1), heights = c(1, 1),
+  guides = "keep"
+)
 
 save_plot(
   map_pair_plot,
@@ -260,13 +297,17 @@ relative_bd_label_plot <- ggplot(
   ) +
   geom_point(aes(fill = author_label_short), shape = 21, size = 2.2, color = "gray20") +
   scale_fill_manual(values = label_palette, guide = "none") +
+  scale_x_discrete(labels = setNames(
+    c("Coarse zones", "Refined zones", "Metaprograms", "State layers"),
+    label_display_levels
+  )) +
   coord_cartesian(ylim = c(0, 1.03)) +
   labs(
     x = "Author label source",
     y = "Relative boundary density"
   ) +
   theme(
-    axis.text.x = element_text(angle = 35, hjust = 1),
+    axis.text.x = element_text(angle = 25, hjust = 1),
     legend.position = "none"
   )
 
@@ -393,9 +434,9 @@ s5_plot <- wrap_plots(
   summary_row_plot,
   ncol = 1,
   heights = c(1.35, 1),
-  guides = "collect"
+  guides = "keep"
 ) +
-  plot_layout(heights = c(1.35, 1), guides = "collect") +
+  plot_layout(heights = c(1.35, 1), guides = "keep") +
   plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(face = "bold", size = 15))
 

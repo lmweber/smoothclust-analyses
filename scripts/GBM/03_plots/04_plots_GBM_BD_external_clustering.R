@@ -266,8 +266,8 @@ method_axis_labels <- vapply(
       as.character(bd_k_map$clustering_setting[bd_k_map$method_display == method])
     )
     method_settings <- method_settings[!is.na(method_settings)]
-    method_settings <- sub("^K=", "K = ", method_settings)
-    paste0(method, "\n(", paste(method_settings, collapse = ", "), ")")
+    method_label <- if (method == "Unsmoothed k-means") "Unsmoothed\nk-means" else method
+    paste(method_label, paste(method_settings, collapse = ", "), sep = "\n")
   },
   character(1)
 )
@@ -286,7 +286,7 @@ bd_method_plot <- ggplot(
   ) +
   theme(
     legend.position = "none",
-    axis.text.x = element_text(angle = 35, hjust = 1, lineheight = 0.9)
+    axis.text.x = element_text(angle = 0, hjust = 0.5, size = 10.5, lineheight = 0.95)
   )
 
 save_plot(
@@ -388,7 +388,7 @@ for (method in external_methods) {
     labs(
       title = method_display,
       subtitle = sprintf(
-        "%s; labels = %s; BD = %.3f",
+        "%s; labels = %s; Raw BD = %.3f",
         selected_bd$clustering_setting,
         selected_bd$n_labels,
         selected_bd$boundary_density
@@ -410,9 +410,9 @@ for (method in external_methods) {
     point_size = 1.2
   ) +
     labs(
-      title = paste(method_display, "local BD"),
+      title = paste(method_display, "local raw BD"),
       subtitle = sprintf("k = %s spatial neighbors", boundary_k),
-      color = "Local BD"
+      color = "Local raw BD"
     ) +
     theme(
       legend.position = "right",

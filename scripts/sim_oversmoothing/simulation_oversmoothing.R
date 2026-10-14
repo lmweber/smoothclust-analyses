@@ -3,6 +3,7 @@
 ################################################################################
 
 # Run from the smoothclust-analyses repository root directory.
+# Recreates the simulation results and figures in one complete run.
 
 library(smoothclust)
 library(ggplot2)
@@ -156,6 +157,7 @@ write.csv(
   row.names = FALSE
 )
 
+# Figure: true/inferred domains, recovery, and boundary density.
 domain_colors <- c(A = "#0072B2", B = "#D55E00", C = "#009E73")
 theme_map <- theme_void(base_size = 12) +
   theme(
@@ -221,11 +223,15 @@ p_recovery <- ggplot(
   scale_y_continuous(limits = c(0, 1), expand = expansion(mult = c(0.02, 0.05))) +
   labs(
     title = "Domain recovery",
-    x = "Smoothing bandwidth (% of section width)", y = "Recovery",
+    x = "Bandwidth (% of section width)", y = "Recovery",
     color = NULL, shape = NULL
   ) +
   theme_bw(base_size = 12) +
-  theme(legend.position = "top", plot.title = element_text(face = "bold"))
+  theme(
+    legend.position = "top", legend.margin = margin(0, 0, 0, 0),
+    legend.box.spacing = grid::unit(0, "pt"),
+    plot.title = element_text(face = "bold")
+  )
 
 p_raw <- ggplot(metrics, aes(100 * bandwidth, boundary_density)) +
   geom_hline(
@@ -236,9 +242,8 @@ p_raw <- ggplot(metrics, aes(100 * bandwidth, boundary_density)) +
   geom_point(color = "#D55E00", size = 2) +
   scale_y_log10() +
   labs(
-    title = "Inferred boundary density",
-    subtitle = "Dashed line: true labels",
-    x = "Smoothing bandwidth (% of section width)", y = "Raw BD (log scale)"
+    title = "Raw BD",
+    x = "Bandwidth (% of section width)", y = "Raw BD (log scale)"
   ) +
   theme_bw(base_size = 12) +
   theme(plot.title = element_text(face = "bold"))
@@ -253,9 +258,8 @@ p_relative <- ggplot(metrics, aes(100 * bandwidth, relative_boundary_density)) +
   geom_point(color = "#CC79A7", size = 2) +
   scale_y_log10() +
   labs(
-    title = "Relative BD:\ncomposition-adjusted summary",
-    subtitle = "Dashed: truth\nDotted: random-label expectation",
-    x = "Smoothing bandwidth (% of section width)",
+    title = "Relative BD",
+    x = "Bandwidth (% of section width)",
     y = "Relative BD (log scale)"
   ) +
   theme_bw(base_size = 12) +

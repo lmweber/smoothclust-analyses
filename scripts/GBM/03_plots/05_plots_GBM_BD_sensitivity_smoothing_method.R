@@ -62,7 +62,7 @@ method_levels <- c("uniform", "kernel", "knn")
 method_display <- c(
   uniform = "uniform",
   kernel = "kernel",
-  knn = "knn"
+  knn = "kNN"
 )
 
 bd$smoothing_method <- factor(
@@ -100,7 +100,7 @@ theme_set(
 method_palette <- c(
   uniform = "#0072B2",
   kernel = "#D55E00",
-  knn = "#009E73"
+  kNN = "#009E73"
 )
 
 k_palette <- setNames(
@@ -165,7 +165,7 @@ save_plot(
 ari$method_pair_display <- factor(
   ari$method_pair,
   levels = c("uniform_vs_kernel", "uniform_vs_knn", "kernel_vs_knn"),
-  labels = c("kernel vs uniform", "knn vs uniform", "knn vs kernel")
+  labels = c("kernel vs uniform", "kNN vs uniform", "kNN vs kernel")
 )
 ari$n_clusters_factor <- factor(
   ari$n_clusters,
@@ -201,7 +201,7 @@ ari_pairwise_plot <- ggplot(
     x = "Number of clusters",
     y = "Adjusted Rand index"
   ) +
-  guides(color = guide_legend(nrow = 1, override.aes = list(size = 1.8))) +
+  guides(color = "none") +
   theme(
     legend.position = "bottom",
     legend.box = "horizontal"

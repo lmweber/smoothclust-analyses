@@ -123,16 +123,16 @@ p_smooth_domains <- plotCoords(
 ) +
   labs(
     title = "smoothclust domains",
-    subtitle = sprintf("%s, K = %s, BD = %.3f", 
+    subtitle = sprintf("%s, K = %s, Raw BD = %.3f",
                        sample_id, n_clusters, selected_result$boundary_density_smoothclust),
     color = "Cluster"
   ) +
   theme(
     legend.position = "right",
     plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
-    plot.subtitle = element_text(size = 10, hjust = 0.5),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 9)
+    plot.subtitle = element_text(size = 10.5, hjust = 0.5),
+    legend.title = element_text(size = 10.5),
+    legend.text = element_text(size = 10)
   )
 
 p_local_bd <- plotCoords(
@@ -142,16 +142,16 @@ p_local_bd <- plotCoords(
   point_size = 1.2
 ) +
   labs(
-    title = "Local boundary density",
+    title = "Local raw BD",
     subtitle = sprintf("smoothclust domains, k = %s neighbors", boundary_k),
-    color = "Local BD"
+    color = "Local raw BD"
   ) +
   theme(
     legend.position = "right",
     plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
-    plot.subtitle = element_text(size = 10, hjust = 0.5),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 9)
+    plot.subtitle = element_text(size = 10.5, hjust = 0.5),
+    legend.title = element_text(size = 10.5),
+    legend.text = element_text(size = 10)
   )
 
 p_baseline_domains <- plotCoords(
@@ -162,16 +162,16 @@ p_baseline_domains <- plotCoords(
 ) +
   labs(
     title = "Unsmoothed k-means",
-    subtitle = sprintf("%s, K = %s, BD = %.3f", 
+    subtitle = sprintf("%s, K = %s, Raw BD = %.3f",
                        sample_id, n_clusters, selected_result$boundary_density_baseline),
     color = "Cluster"
   ) +
   theme(
     legend.position = "right",
     plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
-    plot.subtitle = element_text(size = 10, hjust = 0.5),
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 9)
+    plot.subtitle = element_text(size = 10.5, hjust = 0.5),
+    legend.title = element_text(size = 10.5),
+    legend.text = element_text(size = 10)
   )
 
 
@@ -194,7 +194,10 @@ p_scatter <- ggplot(
   aes(x = boundary_density_smoothclust, y = boundary_density_baseline)
 ) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray45") +
-  geom_point(aes(color = factor(n_clusters)), size = 1.6, alpha = 0.75) +
+  geom_point(
+    aes(fill = factor(n_clusters)), shape = 21,
+    size = 1.6, stroke = 0.25, color = "gray45", alpha = 0.75
+  ) +
   geom_point(
     data = selected_point,
     shape = 21,
@@ -203,12 +206,12 @@ p_scatter <- ggplot(
     fill = "#D81B60",
     color = "black"
   ) +
-  scale_color_manual(values = k_palette, name = "K") +
+  scale_fill_manual(values = k_palette, name = "K") +
   coord_equal(xlim = c(0, max_bd), ylim = c(0, max_bd), expand = TRUE) +
   labs(
-    title = "Sample-level BD comparison",
-    x = "smoothclust BD",
-    y = "Unsmoothed k-means BD"
+    title = "Sample-level raw BD",
+    x = "smoothclust raw BD",
+    y = "Unsmoothed k-means raw BD"
   ) +
   theme(
     plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
@@ -231,9 +234,9 @@ p_difference <- ggplot(
     color = "black"
   ) +
   labs(
-    title = "Paired BD difference",
+    title = "Paired raw BD difference",
     x = "Number of clusters",
-    y = "Unsmoothed - smoothclust BD"
+    y = "Raw BD difference\n(unsmoothed - smoothclust)"
   ) +
   theme(plot.title = element_text(face = "bold", size = 13, hjust = 0.5))
 
@@ -252,16 +255,16 @@ p_heatmap <- ggplot(
     color = "#D81B60",
     linewidth = 0.9
   ) +
-  scale_fill_viridis_c(option = "magma", name = "BD") +
+  scale_fill_viridis_c(option = "magma", name = "Raw BD") +
   labs(
-    title = "smoothclust BD across samples",
+    title = "smoothclust raw BD",
     x = "Number of clusters",
     y = "Sample"
   ) +
   theme(
     panel.grid = element_blank(),
     plot.title = element_text(face = "bold", size = 13, hjust = 0.5),
-    axis.text.y = element_text(size = 8.5),
+    axis.text.y = element_text(size = 10, margin = margin(r = 4)),
     legend.position = "right"
   )
 
@@ -273,10 +276,15 @@ fig <- (
     plot_layout(ncol = 3, widths = c(1, 1.15, 1))
 ) / (
   p_scatter + p_difference + p_heatmap +
-    plot_layout(ncol = 3, widths = c(1, 1, 1.05))
+    plot_layout(ncol = 3, widths = c(1, 1, 1.2))
 ) +
   plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(face = "bold", size = 15))
+  theme(
+    plot.tag = element_text(face = "bold", size = 15),
+    axis.text = element_text(size = 10.5),
+    legend.title = element_text(size = 10.5),
+    legend.text = element_text(size = 10)
+  )
 
 png_file <- file.path(figure_dir, "GBM_BD_figure_zh1019t1.png")
 pdf_file <- file.path(figure_dir, "GBM_BD_figure_zh1019t1.pdf")

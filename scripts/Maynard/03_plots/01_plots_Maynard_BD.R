@@ -123,9 +123,9 @@ for (i in seq_along(section_ids)) {
     labs(
       title = paste("Section", section_id),
       subtitle = sprintf(
-        "%s\nrBD = %.3f", section_subtitle, result$relative_boundary_density
+        "%s\nRelative BD = %.3f", section_subtitle, result$relative_boundary_density
       ),
-      color = "Local BD"
+      color = "Local raw BD"
     ) + spatial_theme
 }
 
@@ -155,7 +155,7 @@ p_local_maps <- wrap_plots(
   theme(legend.position = "right")
 p_local_maps <- p_local_maps +
   plot_annotation(
-    title = "Local boundary density for all 12 DLPFC sections",
+    title = "Local raw BD for all 12 DLPFC sections",
     theme = theme(plot.title = element_text(hjust = 0.5, face = "bold"))
   )
 save_plot(

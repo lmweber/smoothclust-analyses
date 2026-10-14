@@ -41,6 +41,11 @@ region_palette <- setNames(
 q9 <- bd[bd$label_scheme == "author_cortical_region", ]
 q9 <- q9[order(q9$relative_boundary_density), ]
 section_levels <- q9$section_id
+# Match the atlas aliases while retaining full section IDs as ordering keys.
+section_labels <- setNames(
+  gsub("_", "-", gsub("_2021|VisiumHuman_|Human", "", section_levels)),
+  section_levels
+)
 q9$section_id <- factor(q9$section_id, section_levels)
 composition <- counts[counts$label_scheme == "author_cortical_region", ]
 composition$section_id <- factor(composition$section_id, section_levels)
@@ -54,12 +59,13 @@ p_rank <- ggplot(q9, aes(section_id, relative_boundary_density)) +
     aes(xend = section_id, y = 0, yend = relative_boundary_density),
     color = "grey75", linewidth = 0.35
   ) +
-  geom_point(aes(color = relative_boundary_density), size = 2.3) +
-  scale_color_viridis_c(option = "C", end = 0.9) +
+  # Keep the dark endpoint of the existing plasma score palette.
+  geom_point(color = "#0D0887", size = 2.3) +
+  scale_x_discrete(labels = section_labels) +
   labs(
     title = "Published cortical-region annotations summarized by section",
     subtitle = "Sections are ordered by relative boundary density",
-    x = NULL, y = "Relative boundary density", color = "Relative BD"
+    x = NULL, y = "Relative boundary density"
   ) +
   theme(
     axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),

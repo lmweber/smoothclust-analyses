@@ -3,6 +3,9 @@
 ################################################################################
 
 # Run from repository root directory.
+# Recreates all plot exports and both simulations, including their result tables.
+# Retain data/ and the saved non-simulation evaluation inputs in results/.
+# Afterwards, run scripts/manuscript/copy_manuscript_figures.R.
 
 # GBM
 source("scripts/GBM/03_plots/01_plots_GBM_BD.R")

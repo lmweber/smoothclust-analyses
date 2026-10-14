@@ -68,6 +68,12 @@ parameter_label <- function(parameter_type, value) {
   )
 }
 
+parameter_labeller <- as_labeller(c(
+  uniform = 'atop("uniform", "Bandwidth " * italic(b))',
+  kernel = 'atop("kernel", "Bandwidth " * italic(b))',
+  knn = 'atop("kNN", "Smoothing neighbors " * italic(k)[s])'
+), default = label_parsed)
+
 make_spatial_plot <- function(spe_map, map_row) {
   label_col <- map_row$label_col
   n_labels <- map_row$n_labels
@@ -259,7 +265,10 @@ dose_response_plot <- ggplot(
     color = "gray35",
     inherit.aes = FALSE
   ) +
-  facet_wrap(~ smoothing_method, nrow = 1, scales = "free_x") +
+  facet_wrap(
+    ~ smoothing_method, nrow = 1, scales = "free_x",
+    labeller = parameter_labeller
+  ) +
   labs(
     x = "Smoothing parameter value",
     y = "Raw boundary density",
@@ -300,12 +309,15 @@ rank_stability_plot <- ggplot(
     color = "black",
     linewidth = 0.6
   ) +
-  facet_wrap(~ smoothing_method, nrow = 1, scales = "free_x") +
+  facet_wrap(
+    ~ smoothing_method, nrow = 1, scales = "free_x",
+    labeller = parameter_labeller
+  ) +
   scale_fill_viridis_c(
     option = "viridis",
     limits = c(0, 1),
     na.value = "gray85",
-    name = "Spearman\nrho"
+    name = expression(atop("Spearman", rho))
   ) +
   labs(
     x = "Smoothing parameter value",
