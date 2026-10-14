@@ -136,20 +136,21 @@ p_core <- ggplot(runtime, aes(x = workflow_label, y = seconds, fill = stage)) +
   geom_col(width = 0.62, position = position_stack(reverse = TRUE)) +
   coord_flip(clip = "off") +
   scale_fill_manual(values = runtime_colors) +
+  guides(fill = guide_legend(nrow = 2, byrow = TRUE)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.3))) +
   labs(
     x = NULL,
     y = "Elapsed time (seconds)",
     fill = NULL,
     title = "Core smoothclust workflow components",
-    subtitle = "Descriptive timings; workloads, requested threads, and fitting scope differ"
+    subtitle = "Descriptive timings; workloads,\nrequested threads, and fitting scope differ"
   ) +
   theme_bw(base_size = 13) +
   theme(
     legend.position = "top",
     panel.grid.major.y = element_blank(),
     plot.title = element_text(face = "bold"),
-    plot.margin = margin(5.5, 20, 5.5, 5.5)
+    plot.margin = margin(5.5, 5.5, 5.5, 5.5)
   )
 
 # Reuse recorded comparison totals; no method or timing code is run here.
@@ -221,9 +222,11 @@ p_method <- ggplot(
     axis.title.y = element_text(margin = margin(r = 3))
   )
 
+# Center complete plots within explicit, equal gutters; keep their axes independent.
 runtime_figure <- wrap_plots(
-  A = p_core, B = p_method, design = "#A#\n#B#",
-  widths = c(0.08, 1, 0.08), heights = c(1.15, 1)
+  plot_spacer(), wrap_elements(full = p_core), plot_spacer(),
+  plot_spacer(), wrap_elements(full = p_method), plot_spacer(),
+  ncol = 3, widths = c(0.35, 1, 0.35), heights = c(1.15, 1)
 ) +
   plot_annotation(
     tag_levels = "A",

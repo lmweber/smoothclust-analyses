@@ -448,7 +448,7 @@ external_maps_figure <- (
     wrap_plots(external_local_plots, nrow = 1)
 ) +
   plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(face = "bold", size = 15))
+  theme(plot.tag = element_text(face = "bold", size = 15, margin = margin(b = 6)))
 
 save_plot(
   external_maps_figure,
