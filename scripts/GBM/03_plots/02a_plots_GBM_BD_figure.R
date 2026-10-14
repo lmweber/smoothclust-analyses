@@ -298,6 +298,28 @@ fig <- (
     legend.text = element_text(size = 10)
   )
 
+# Align B/E and C/F independently of the two rows' different panel widths.
+# Retain the original tag rows and the already aligned A/D positions.
+fig <- patchworkGrob(fig)
+row_tables <- grep("^patchwork-table-", fig$layout$name)
+stopifnot(length(row_tables) == 2L)
+for (i in seq_along(row_tables)) {
+  row <- fig$grobs[[row_tables[i]]]
+  tag_slots <- match(c("tag-2", "tag-3"), row$layout$name)
+  stopifnot(!anyNA(tag_slots))
+  for (j in seq_along(tag_slots)) {
+    slot <- tag_slots[j]
+    row$layout$l[slot] <- 1L
+    row$layout$r[slot] <- length(row$widths)
+    row$grobs[[slot]] <- grid::textGrob(
+      LETTERS[3L * (i - 1L) + j + 1L],
+      x = grid::unit(c(0.33, 0.65)[j], "npc"), just = "left",
+      gp = grid::gpar(fontsize = 15, fontface = "bold")
+    )
+  }
+  fig$grobs[[row_tables[i]]] <- row
+}
+
 png_file <- file.path(figure_dir, "GBM_BD_figure_zh1019t1.png")
 pdf_file <- file.path(figure_dir, "GBM_BD_figure_zh1019t1.pdf")
 
