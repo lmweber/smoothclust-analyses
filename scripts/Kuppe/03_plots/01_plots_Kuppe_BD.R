@@ -186,7 +186,8 @@ p_group <- p_relative + p_expected +
   plot_annotation(
     title = "BD of myocardial cell-type niches",
     tag_levels = "A"
-  )
+  ) &
+  theme(plot.tag = element_text(face = "bold"))
 
 save_plot(
   p_group,
