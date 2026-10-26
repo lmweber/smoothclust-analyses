@@ -76,7 +76,7 @@ hd_hvgs <- select_variable_genes(
   hd_library_size,
   hd_gene_keep,
   hd_sketch,
-  n = 300
+  n = 1000
 )
 
 hd_coldata <- DataFrame(
@@ -114,11 +114,11 @@ saveRDS(
 )
 
 
-# Xenium: full non-empty P2 CRC cell matrix
+# Xenium: retain all 422 panel genes and non-empty P2 CRC cells
 
 xenium_dir <- file.path(raw_dir, "Xenium_HumanColon_Oliveira")
 xenium_spe <- readXeniumSXE(xenium_dir, addParquetPaths = FALSE)
-# Preserve full-library sizes before selecting genes for downstream normalization.
+# Preserve full-library sizes for downstream normalization.
 xenium_library_size <- Matrix::colSums(counts(xenium_spe))
 xenium_detected <- Matrix::colSums(counts(xenium_spe) > 0)
 xenium_keep <- xenium_library_size > 0
@@ -132,21 +132,6 @@ colData(xenium_spe)$library_size <- xenium_library_size
 colData(xenium_spe)$n_detected <- xenium_detected
 
 xenium_gene_detected <- Matrix::rowSums(counts(xenium_spe) > 0)
-xenium_gene_keep <-
-  xenium_gene_detected >= ceiling(min_detected_fraction * ncol(xenium_spe))
-set.seed(seed)
-xenium_sketch <- sample(
-  seq_len(ncol(xenium_spe)),
-  min(sketch_n, ncol(xenium_spe))
-)
-xenium_hvgs <- select_variable_genes(
-  counts(xenium_spe),
-  xenium_library_size,
-  xenium_gene_keep,
-  xenium_sketch,
-  n = 300
-)
-xenium_spe <- xenium_spe[xenium_hvgs, ]
 saveRDS(
   xenium_spe,
   file.path(processed_dir, "spe_deOliveira_Xenium_P2CRC.rds")
