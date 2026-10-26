@@ -182,13 +182,20 @@ paired_plot <- function(metric, title, letter) {
 
 # Top row: existing spatial panels A/B.
 # Bottom row: raw BD (C), expected BD (D), and relative BD (E).
+# Use separate row layouts so C/D/E have equal widths independent of A/B.
 figure <- wrap_plots(
-  A = map_pair(schemes[1], "A", "Nine-region annotation"),
-  B = map_pair(schemes[2], "B", "WM1-WM3 merged"),
-  C = paired_plot("boundary_density", "Raw BD", "C"),
-  D = paired_plot("expected_boundary_density", "Expected BD", "D"),
-  E = paired_plot("relative_boundary_density", "Relative BD", "E"),
-  design = "AAABBB\nCCDDEE",
+  wrap_plots(
+    A = map_pair(schemes[1], "A", "Nine-region annotation"),
+    B = map_pair(schemes[2], "B", "WM1-WM3 merged"),
+    nrow = 1, widths = c(1, 1), guides = "keep"
+  ),
+  wrap_plots(
+    C = paired_plot("boundary_density", "Raw BD", "C"),
+    D = paired_plot("expected_boundary_density", "Expected BD", "D"),
+    E = paired_plot("relative_boundary_density", "Relative BD", "E"),
+    nrow = 1, widths = c(1, 1, 1), guides = "keep"
+  ),
+  ncol = 1,
   heights = c(3.4, 2.8),
   guides = "keep"
 )
