@@ -56,6 +56,9 @@ for (section_id in unique(bd$section_id)) {
   raw_bd <- section_summary$boundary_density[
     match(schemes, section_summary$label_scheme)
   ]
+  expected_bd <- section_summary$expected_boundary_density[
+    match(schemes, section_summary$label_scheme)
+  ]
   expected_labels <- ifelse(original$author_label %in% c("WM1", "WM2", "WM3"),
                             "WM", as.character(original$author_label))
   stopifnot(
@@ -73,7 +76,9 @@ for (section_id in unique(bd$section_id)) {
       all(merged$local_boundary_density <=
             original$local_boundary_density + tolerance),
     "Merging must not increase sample-level raw BD" =
-      raw_bd[2] <= raw_bd[1] + tolerance
+      raw_bd[2] <= raw_bd[1] + tolerance,
+    "Merging must not increase expected BD" =
+      expected_bd[2] <= expected_bd[1] + tolerance
   )
   for (scheme_i in seq_along(schemes)) {
     local <- if (scheme_i == 1L) original else merged
@@ -175,19 +180,17 @@ paired_plot <- function(metric, title, letter) {
           plot.tag.position = "topleft", panel.grid.minor = element_blank())
 }
 
-# Compact the map rows; center C/D at 75% of their column widths.
+# Top row: existing spatial panels A/B.
+# Bottom row: raw BD (C), expected BD (D), and relative BD (E).
 figure <- wrap_plots(
-  map_pair(schemes[1], "A", "Nine-region annotation"),
-  map_pair(schemes[2], "B", "WM1-WM3 merged"),
-  wrap_plots(
-    plot_spacer(), paired_plot("boundary_density", "Raw BD", "C"), plot_spacer(),
-    nrow = 1, widths = c(1.25, 7.5, 1.25)
-  ),
-  wrap_plots(
-    plot_spacer(), paired_plot("relative_boundary_density", "Relative BD", "D"),
-    plot_spacer(), nrow = 1, widths = c(1.25, 7.5, 1.25)
-  ),
-  ncol = 2, heights = c(3.4, 2.8), guides = "keep"
+  A = map_pair(schemes[1], "A", "Nine-region annotation"),
+  B = map_pair(schemes[2], "B", "WM1-WM3 merged"),
+  C = paired_plot("boundary_density", "Raw BD", "C"),
+  D = paired_plot("expected_boundary_density", "Expected BD", "D"),
+  E = paired_plot("relative_boundary_density", "Relative BD", "E"),
+  design = "AAABBB\nCCDDEE",
+  heights = c(3.4, 2.8),
+  guides = "keep"
 )
 
 dir.create(summary_dir, recursive = TRUE, showWarnings = FALSE)

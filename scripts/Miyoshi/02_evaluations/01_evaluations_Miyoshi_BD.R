@@ -100,11 +100,21 @@ rownames(scheme_summary) <- NULL
 # Paired differences are WM-collapsed minus the deposited q=9 annotation.
 q9 <- bd_summary[
   bd_summary$label_scheme == "author_cortical_region",
-  c("section_id", "boundary_density", "relative_boundary_density")
+  c(
+    "section_id",
+    "boundary_density",
+    "expected_boundary_density",
+    "relative_boundary_density"
+  )
 ]
 network <- bd_summary[
   bd_summary$label_scheme == "author_network_region",
-  c("section_id", "boundary_density", "relative_boundary_density")
+  c(
+    "section_id",
+    "boundary_density",
+    "expected_boundary_density",
+    "relative_boundary_density"
+  )
 ]
 names(q9)[-1] <- paste0(names(q9)[-1], "_q9")
 names(network)[-1] <- paste0(names(network)[-1], "_wm_collapsed")
@@ -115,6 +125,9 @@ scheme_comparison$change_relative_boundary_density <-
 scheme_comparison$change_boundary_density <-
   scheme_comparison$boundary_density_wm_collapsed -
   scheme_comparison$boundary_density_q9
+scheme_comparison$change_expected_boundary_density <-
+  scheme_comparison$expected_boundary_density_wm_collapsed -
+  scheme_comparison$expected_boundary_density_q9
 relative_bd_change <- scheme_comparison$change_relative_boundary_density
 comparison_summary <- data.frame(
   n_sections = nrow(scheme_comparison),
@@ -128,6 +141,21 @@ comparison_summary <- data.frame(
     method = "spearman"
   )
 )
+
+# Summarize expected-BD changes using the plotting checks' numerical tolerance.
+expected_bd_change <- scheme_comparison$change_expected_boundary_density
+expected_bd_tolerance <- 1e-12
+
+comparison_summary$n_expected_decreased <-
+  sum(expected_bd_change < -expected_bd_tolerance)
+comparison_summary$n_expected_unchanged <-
+  sum(abs(expected_bd_change) <= expected_bd_tolerance)
+comparison_summary$n_expected_increased <-
+  sum(expected_bd_change > expected_bd_tolerance)
+comparison_summary$median_change_expected_boundary_density <-
+  median(expected_bd_change)
+comparison_summary$mean_change_expected_boundary_density <-
+  mean(expected_bd_change)
 
 parameters <- data.frame(
   dataset_id = dataset_id,
