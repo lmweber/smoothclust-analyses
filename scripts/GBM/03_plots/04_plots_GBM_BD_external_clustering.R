@@ -451,7 +451,7 @@ external_maps_figure <- (
   theme(plot.tag = element_text(face = "bold", size = 15, margin = margin(b = 6)))
 
 # Align A/D, B/E, and C/F figure panel labels.
-# Retain the original tag rows and use common horizontal positions.
+# Retain tag spacing, but draw labels on one canvas because row viewports differ.
 external_maps_figure <- patchworkGrob(external_maps_figure)
 row_tables <- grep("^patchwork-table-", external_maps_figure$layout$name)
 stopifnot(length(row_tables) == 2L)
@@ -459,18 +459,21 @@ for (i in seq_along(row_tables)) {
   row <- external_maps_figure$grobs[[row_tables[i]]]
   tag_slots <- match(paste0("tag-", 1:3), row$layout$name)
   stopifnot(!anyNA(tag_slots))
-  for (j in seq_along(tag_slots)) {
-    slot <- tag_slots[j]
-    row$layout$l[slot] <- 1L
-    row$layout$r[slot] <- length(row$widths)
-    row$grobs[[slot]] <- grid::textGrob(
-      LETTERS[3L * (i - 1L) + j],
-      x = grid::unit(c(0.01, 0.33, 0.65)[j], "npc"), just = "left",
-      gp = grid::gpar(fontsize = 15, fontface = "bold")
-    )
+  for (slot in tag_slots) {
+    row$grobs[[slot]] <- grid::nullGrob()
   }
   external_maps_figure$grobs[[row_tables[i]]] <- row
 }
+external_maps_figure <- grid::grobTree(
+  external_maps_figure,
+  grid::textGrob(
+    LETTERS[1:6],
+    x = grid::unit(rep(c(0.06, 0.35, 0.64), 2), "npc"),
+    y = grid::unit(rep(c(0.955, 0.47), each = 3), "npc"),
+    just = c("left", "centre"),
+    gp = grid::gpar(fontsize = 15, fontface = "bold")
+  )
+)
 
 save_plot(
   external_maps_figure,
